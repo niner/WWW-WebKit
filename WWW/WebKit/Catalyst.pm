@@ -11,6 +11,9 @@ use MIME::Base64;
 use HTTP::Request::Common qw(POST);
 use Time::HiRes qw(usleep);
 
+use constant DOM_TYPE_ELEMENT => 1;
+use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
+
 has app => (
     is       => 'ro',
     isa      => 'ClassName',
@@ -154,7 +157,7 @@ sub code_for_selector {
         return "document.evaluate('$1', $context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
     }
     if ($locator =~ /^label=(.*)/) {
-        return $self->code_for_selector(qq{xpath=//*[text()="$1"]}, $context);
+        return $self->code_for_selector(qq{xpath=.//*[text()="$1"]}, $context);
     }
     if ($locator =~ /^id=(.*)/) {
         return "document.getElementById('$1')";
@@ -162,21 +165,45 @@ sub code_for_selector {
     die "unknown locator $locator";
 }
 
+sub resolve_locator {
+    my ($self, $document, $locator, $context) = @_;
+
+    $context ||= $document;
+
+    if (my ($xpath) = $locator =~ /^xpath=(.*)/) {
+        my $resolver = $document->create_ns_resolver($context);
+        my $xpath_results = $document->evaluate($xpath, $context, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
+        my $length = $xpath_results->get_snapshot_length;
+        die "$xpath gave $length results" if $length != 1;
+        return $xpath_results->snapshot_item(0);
+    }
+    if ($locator =~ /^label=(.*)/) {
+        return $self->resolve_locator($document, qq{xpath=.//*[text()="$1"]}, $context);
+    }
+}
+
 sub select_ok {
     my ($self, $select, $option) = @_;
 
-    $select = $self->code_for_selector($select);
-    $option = $self->code_for_selector($option, 'select');
+    my $document = $self->view->get_dom_document;
+    $select = $self->resolve_locator($document, $select);
+    $option = $self->resolve_locator($document, $option, $select);
 
-    return $self->eval_js("
-        var select = $select;
-        alert('select ' + select);
-        var option = $option;
-        alert('option ' + option);
-        for (var i = 0; i < select.options.length; i++)
-            if (select.options[i] == option)
-                return select.selectedIndex = i;
-    ");
+    my $options = $select->get_property('options');
+    foreach my $i (0 .. $options->get_length) {
+        my $current = $options->item($i);
+
+        if ($current->is_same_node($option)) {
+            $select->set_selected_index($i);
+
+            my $changed = $document->create_event('Event');
+            $changed->init_event('change', TRUE, TRUE);
+            $select->dispatch_event($changed);
+
+            Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+            return;
+        }
+    }
 }
 
 sub click_ok {
