@@ -149,6 +149,23 @@ sub eval_js {
     return pop @{ $self->alerts };
 }
 
+sub code_for_locator {
+    my ($self, $locator, $context) = @_;
+
+    $context ||= 'document';
+
+    if ($locator =~ /^xpath=(.*)/) {
+        return "document.evaluate('$1', $context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
+    }
+    if ($locator =~ /^label=(.*)/) {
+        return $self->code_for_locator(qq{xpath=.//*[text()="$1"]}, $context);
+    }
+    if ($locator =~ /^id=(.*)/) {
+        return "document.getElementById('$1')";
+    }
+    die "unknown locator $locator";
+}
+
 sub resolve_locator {
     my ($self, $locator, $document, $context) = @_;
 
@@ -204,7 +221,7 @@ sub click_ok {
     my $target = $self->resolve_locator($locator, $document);
 
     my $click = $document->create_event('MouseEvent');
-    $click->init_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, undef);
+    $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($click);
 }
 
@@ -240,7 +257,35 @@ sub type_ok {
 }
 
 sub key_press {
-    warn "key_press", @_;
+    my ($self, $locator, $key) = @_;
+
+    $key =~ s/\A \\(\d+) \z/$1/xme;
+
+    # Keyboard events seem to not be implemented fully in Gtk Webkit
+#    my $document = $self->view->get_dom_document;
+#    my $target = $self->resolve_locator($locator, $document);
+#
+#    my $keypress = $document->create_event('KeyboardEvent');
+#    warn $keypress;
+#    $keypress->init_ui_event('keypress', TRUE, TRUE, $document->get_property('default_view'), int($key));
+#    $target->dispatch_event($keypress);
+
+    my $elem = $self->code_for_locator($locator);
+    $key = int($key);
+    $self->eval_js(<<EVENT);
+        var elem = $elem;
+        event = {'keyCode': $key};
+        while (elem) {
+            if (elem.onkeypress)
+                elem.onkeypress(event);
+            elem = elem.parentNode;
+        }
+EVENT
+    # Webkit bug https://bugs.webkit.org/show_bug.cgi?id=16735
+    # Created keybord events do not work yet
+        #//var keypress = document.createEvent('KeyboardEvent');
+        #//keypress.initKeyboardEvent('keypress', 1, 1, window, '\\$key', $key, 0, '', 0, '');
+        #//elem.dispatchEvent(keypress);
 }
 
 sub pause {
