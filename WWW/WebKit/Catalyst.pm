@@ -234,7 +234,9 @@ sub get_text {
 }
 
 sub type_ok {
-    warn "type_ok", @_;
+    my ($self, $locator, $text) = @_;
+
+    $self->resolve_locator($locator)->set_value($text);
 }
 
 sub key_press {
