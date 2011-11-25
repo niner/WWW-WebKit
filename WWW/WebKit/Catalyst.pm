@@ -10,6 +10,7 @@ use Glib qw(TRUE FALSE);
 use MIME::Base64;
 use HTTP::Request::Common qw(POST);
 use Time::HiRes qw(usleep);
+use Test::More;
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
@@ -149,8 +150,9 @@ sub eval_js {
 }
 
 sub resolve_locator {
-    my ($self, $document, $locator, $context) = @_;
+    my ($self, $locator, $document, $context) = @_;
 
+    $document ||= $self->view->get_dom_document;
     $context ||= $document;
 
     if (my ($xpath) = $locator =~ /^xpath=(.*)/) {
@@ -161,7 +163,7 @@ sub resolve_locator {
         return $xpath_results->snapshot_item(0);
     }
     elsif (my ($label) = $locator =~ /^label=(.*)/) {
-        return $self->resolve_locator($document, qq{xpath=.//*[text()="$label"]}, $context);
+        return $self->resolve_locator(qq{xpath=.//*[text()="$label"]}, $document, $context);
     }
     elsif (my ($id) = $locator =~ /^id=(.*)/) {
         return $document->get_element_by_id($id);
@@ -175,8 +177,8 @@ sub select_ok {
     my ($self, $select, $option) = @_;
 
     my $document = $self->view->get_dom_document;
-    $select = $self->resolve_locator($document, $select);
-    $option = $self->resolve_locator($document, $option, $select);
+    $select = $self->resolve_locator($select, $document);
+    $option = $self->resolve_locator($option, $document, $select);
 
     my $options = $select->get_property('options');
     foreach my $i (0 .. $options->get_length) {
@@ -199,7 +201,7 @@ sub click_ok {
     my ($self, $locator) = @_;
 
     my $document = $self->view->get_dom_document;
-    my $target = $self->resolve_locator($document, $locator);
+    my $target = $self->resolve_locator($locator, $document);
 
     my $click = $document->create_event('MouseEvent');
     $click->init_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, undef);
@@ -216,15 +218,19 @@ sub wait_for_element_present_ok {
 
     my $document = $self->view->get_dom_document;
 
-    Gtk3->main_iteration while Gtk3->events_pending or not eval { $self->resolve_locator($document, $locator) };
+    Gtk3->main_iteration while Gtk3->events_pending or not eval { $self->resolve_locator($locator, $document) };
 }
 
 sub is_element_present_ok {
-    warn "is_element_present_ok", @_;
+    my ($self, $locator) = @_;
+
+    ok(eval { $self->resolve_locator($locator) });
 }
 
 sub get_text {
-    warn "get_text";
+    my ($self, $locator) = @_;
+
+    return $self->resolve_locator($locator)->get_text_content;
 }
 
 sub type_ok {
