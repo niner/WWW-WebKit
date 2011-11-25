@@ -209,15 +209,12 @@ sub select_ok {
 sub click_ok {
     my ($self, $locator) = @_;
 
-    my $target = $self->code_for_selector($locator);
+    my $document = $self->view->get_dom_document;
+    my $target = $self->resolve_locator($document, $locator);
 
-    return $self->eval_js(<<"        JS");
-        var evt = window.document.createEvent("MouseEvent");
-        var target = $target;
-        alert(target);
-        evt.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
-        return target.dispatchEvent(evt);
-        JS
+    my $click = $document->create_event('MouseEvent');
+    $click->init_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, undef);
+    $target->dispatch_event($click);
 }
 
 sub wait_for_page_to_load_ok {
