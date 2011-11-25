@@ -9,6 +9,7 @@ use HTTP::Soup;
 use Glib qw(TRUE FALSE);
 use MIME::Base64;
 use HTTP::Request::Common qw(POST);
+use Time::HiRes qw(usleep);
 
 has app => (
     is       => 'ro',
@@ -87,23 +88,19 @@ sub start_catalyst_server {
             exit 0;
         };
 
-        my $port;
+        my ($port, $catalyst);
         while (1) {
             $port = 1024 + int(rand(65535 - 1024));
 
             my $loader = Catalyst::EngineLoader->new(application_name => $self->app);
             eval {
-                my $server = $loader->auto(port => $port, host => 'localhost',
-                    server_ready => sub {
-                        warn "Catalyst started on port $port";
-                    },
-                );
+                $catalyst = $loader->auto(port => $port, host => 'localhost');
             };
             warn $@ if $@;
             last unless $@;
         }
         say $port;
-        $self->app->run($port, 'localhost', $server);
+        $self->app->run($port, 'localhost', $catalyst);
 
         exit 1;
     }
@@ -113,9 +110,7 @@ sub init {
     my ($self) = @_;
 
     $ENV{CATALYST_PORT} = $self->start_catalyst_server;
-    warn "Catalyst server started";
 
-    #$self->view->signal_connect('load-finished' => sub { Gtk3->main_quit });
     $self->view->signal_connect('script-alert' => sub {
         warn 'alert: ' . $_[2];
         push @{ $self->alerts }, $_[2];
@@ -125,17 +120,6 @@ sub init {
         push @{ $self->console_messages }, $_[1];
         return FALSE;
     });
-
-    #my $session = Gtk3::WebKit->get_default_session();
-    #my %resources;
-    #$session->signal_connect('request-queued' => sub {
-    #    warn "request-queued";
-    #    $self->load_uri(@_)
-    #}, \%resources);
-    #$self->view->signal_connect('resource-request-starting' => sub {
-    #    my ($view, $frame, $web_resource, $request, $response, $user_data) = @_;
-    #    $self->load_uri(undef, $request->get_property('message'), undef, $user_data);
-    #});
 
     $self->window->show_all;
     Gtk3->main_iteration while Gtk3->events_pending;
@@ -149,43 +133,6 @@ sub open_ok {
     $self->view->open($url);
 
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
-}
-
-sub load_uri {
-    my ($self, $session, $message, $resources) = @_;
-    #my ($self, $view, $frame, $web_resource, $request, $response, $user_data) = @_;
-    warn "load_uri";
-
-    my $mech = $self->mech;
-
-    my $uri = $message->get_uri->to_string(TRUE);
-    return FALSE unless $message; # about:blank
-
-    warn $uri;
-
-    my $body = $message->request_body;
-    my $headers = $message->request_headers;
-    my $request_content_type = $headers->content_type();
-    warn $body->data;
-    my $mech_request = HTTP::Request->new($message->method, $uri, ['content-type' => $request_content_type], $body->data);
-    warn $mech_request->as_string;
-    $mech->request($mech_request);
-    $mech->response->header('Access-Control-Allow-Origin' => '*');
-    warn $mech->response->as_string;
-
-    #$message->method('GET');
-    #$request->set_uri('data:' . $mech->ct . ';base64,' . encode_base64($mech->content));
-    my $res = 'HTTP/1.0 ' . $mech->response->as_string;
-    utf8::encode($res) if utf8::is_utf8($res);
-
-    $message->method('POST');
-    $headers->content_type('application/binary');
-    #$headers->set_property('content-type', 'application/binary');
-    $body->data($res);
-    $body->length(length $res);
-    $message->set_uri(HTTP::Soup::URI->new("http://localhost:8080/echo/$uri"));
-
-    return TRUE;
 }
 
 sub eval_js {
@@ -247,15 +194,15 @@ sub click_ok {
 }
 
 sub wait_for_page_to_load_ok {
-    #warn "wait_for_page_to_load_ok", @_;
+    my ($self, $timeout) = @_;
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
 sub wait_for_element_present_ok {
     my ($self, $locator) = @_;
     my $element = $self->code_for_selector($locator);
-    warn "waiting";
+
     Gtk3->main_iteration while Gtk3->events_pending or $self->eval_js("return $element") eq 'null';
-    warn "waited";
 }
 
 sub is_element_present_ok {
@@ -276,7 +223,7 @@ sub key_press {
 
 sub pause {
     my ($self, $time) = @_;
-    sleep $time / 1000;
+    usleep $time * 1000;
 }
 
 sub is_ordered_ok {
@@ -285,9 +232,6 @@ sub is_ordered_ok {
 
 sub get_body_text {
     warn "get_body_text";
-}
-
-END {
 }
 
 1;
