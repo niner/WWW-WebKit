@@ -1,5 +1,6 @@
 package Test::WWW::WebKit::Catalyst;
 
+use 5.10.0;
 use Moose;
 
 use Gtk3 -init;
@@ -8,6 +9,12 @@ use HTTP::Soup;
 use Glib qw(TRUE FALSE);
 use MIME::Base64;
 use HTTP::Request::Common qw(POST);
+
+has app => (
+    is       => 'ro',
+    isa      => 'ClassName',
+    required => 1,
+);
 
 has view => (
     is      => 'ro',
@@ -44,13 +51,69 @@ has console_messages => (
     default => sub { [] },
 );
 
+has server_pid => (
+    is  => 'rw',
+    isa => 'Int',
+);
+
+has server => (
+    is => 'rw',
+);
+
 has mech => (
     is  => 'ro',
     isa => 'WWW::Mechanize',
 );
 
+sub DESTROY {
+    my ($self) = @_;
+    kill 15, $self->server_pid;
+    close $self->server;
+}
+
+sub start_catalyst_server {
+    my ($self) = @_;
+
+    my $pid;
+    if (my $pid = open my $server, '-|') {
+        $self->server_pid($pid);
+        $self->server($server);
+        my $port = <$server>;
+        chomp $port;
+        return $port;
+    }
+    else {
+        local $SIG{TERM} = sub {
+            exit 0;
+        };
+
+        my $port;
+        while (1) {
+            $port = 1024 + int(rand(65535 - 1024));
+
+            my $loader = Catalyst::EngineLoader->new(application_name => $self->app);
+            eval {
+                my $server = $loader->auto(port => $port, host => 'localhost',
+                    server_ready => sub {
+                        warn "Catalyst started on port $port";
+                    },
+                );
+            };
+            warn $@ if $@;
+            last unless $@;
+        }
+        say $port;
+        $self->app->run($port, 'localhost', $server);
+
+        exit 1;
+    }
+}
+
 sub init {
     my ($self) = @_;
+
+    $ENV{CATALYST_PORT} = $self->start_catalyst_server;
+    warn "Catalyst server started";
 
     #$self->view->signal_connect('load-finished' => sub { Gtk3->main_quit });
     $self->view->signal_connect('script-alert' => sub {
@@ -63,12 +126,12 @@ sub init {
         return FALSE;
     });
 
-    my $session = Gtk3::WebKit->get_default_session();
-    my %resources;
-    $session->signal_connect('request-queued' => sub {
-        warn "request-queued";
-        $self->load_uri(@_)
-    }, \%resources);
+    #my $session = Gtk3::WebKit->get_default_session();
+    #my %resources;
+    #$session->signal_connect('request-queued' => sub {
+    #    warn "request-queued";
+    #    $self->load_uri(@_)
+    #}, \%resources);
     #$self->view->signal_connect('resource-request-starting' => sub {
     #    my ($view, $frame, $web_resource, $request, $response, $user_data) = @_;
     #    $self->load_uri(undef, $request->get_property('message'), undef, $user_data);
@@ -222,6 +285,9 @@ sub is_ordered_ok {
 
 sub get_body_text {
     warn "get_body_text";
+}
+
+END {
 }
 
 1;
