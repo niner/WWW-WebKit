@@ -137,6 +137,7 @@ sub open_ok {
     $self->view->open($url);
 
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    ok(1, "open_ok($url)");
 }
 
 sub eval_js {
@@ -196,12 +197,12 @@ sub resolve_locator {
     die "unknown locator $locator";
 }
 
-sub select_ok {
+sub select {
     my ($self, $select, $option) = @_;
 
     my $document = $self->view->get_dom_document;
-    $select = $self->resolve_locator($select, $document);
-    $option = $self->resolve_locator($option, $document, $select);
+    $select = $self->resolve_locator($select, $document)          or return;
+    $option = $self->resolve_locator($option, $document, $select) or return;
 
     my $options = $select->get_property('options');
     foreach my $i (0 .. $options->get_length) {
@@ -215,25 +216,42 @@ sub select_ok {
             $select->dispatch_event($changed);
 
             Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
-            return;
+            return 1;
         }
     }
+
+    return;
+}
+
+sub select_ok {
+    my ($self, $select, $option) = @_;
+
+    ok($self->select($select, $option), "select_ok($select, $option)");
+}
+
+sub click {
+    my ($self, $locator) = @_;
+
+    my $document = $self->view->get_dom_document;
+    my $target = $self->resolve_locator($locator, $document) or return;
+
+    my $click = $document->create_event('MouseEvent');
+    $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
+    $target->dispatch_event($click);
+    return 1;
 }
 
 sub click_ok {
     my ($self, $locator) = @_;
 
-    my $document = $self->view->get_dom_document;
-    my $target = $self->resolve_locator($locator, $document);
-
-    my $click = $document->create_event('MouseEvent');
-    $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
-    $target->dispatch_event($click);
+    ok($self->click($locator), "click_ok($locator)");
 }
 
 sub wait_for_page_to_load_ok {
     my ($self, $timeout) = @_;
+
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    ok(1, "wait_for_page_to_load_ok");
 }
 
 sub wait_for_element_present {
@@ -247,7 +265,7 @@ sub wait_for_element_present {
 sub wait_for_element_present_ok {
     my ($self, $locator) = @_;
 
-    return $self->wait_for_element_present($locator);
+    ok($self->wait_for_element_present($locator), "wait_for_element_present_ok($locator)");
 }
 
 sub is_element_present_ok {
@@ -262,10 +280,18 @@ sub get_text {
     return $self->resolve_locator($locator)->get_text_content;
 }
 
-sub type_ok {
+sub type {
     my ($self, $locator, $text) = @_;
 
     $self->resolve_locator($locator)->set_value($text);
+
+    return 1;
+}
+
+sub type_ok {
+    my ($self, $locator, $text) = @_;
+
+    ok(eval { $self->type($locator, $text) }, "type_ok($locator, $text)");
 }
 
 sub key_press {
@@ -306,12 +332,14 @@ sub pause {
 }
 
 sub is_ordered {
+    my ($self, $first, $second) = @_;
     return 1;
 }
 
 sub is_ordered_ok {
-    my ($self, $locator);
-    return $self->is_ordered($locator);
+    my ($self, $first, $second);
+
+    ok($self->is_ordered($first, $second), "is_ordered_ok($first, $second)");
 }
 
 sub get_body_text {
@@ -320,15 +348,23 @@ sub get_body_text {
     return $self->view->get_dom_document->get_property('body')->get_property('inner_html');
 }
 
-sub mouse_over_ok {
+sub mouse_over {
     my ($self, $locator) = @_;
 
     my $document = $self->view->get_dom_document;
-    my $target = $self->resolve_locator($locator, $document);
+    my $target = $self->resolve_locator($locator, $document) or return;
 
     my $move = $document->create_event('MouseEvent');
     $move->init_mouse_event('move', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($move);
+
+    return 1;
+}
+
+sub mouse_over_ok {
+    my ($self, $locator) = @_;
+
+    ok($self->mouse_over($locator), "mouse_over_ok($locator)");
 }
 
 =head2 native_drag_and_drop_to_object_ok($source, $target)
@@ -350,6 +386,8 @@ sub native_drag_and_drop_to_object_ok {
         evt.initDragEvent('drop', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, target, {'setData': function(property, data) {}});
         target.dispatchEvent(evt);
     JS
+
+    ok(1, "native_drag_and_drop_to_object_ok($source, $target)");
 }
 
 1;
