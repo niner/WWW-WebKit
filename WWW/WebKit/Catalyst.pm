@@ -188,6 +188,9 @@ sub resolve_locator {
     elsif (my ($id) = $locator =~ /^id=(.*)/) {
         return $document->get_element_by_id($id);
     }
+    elsif (my ($css) = $locator =~ /^css=(.*)/) {
+        return $document->query_selector($css);
+    }
 
     warn "unknown locator $locator";
     die "unknown locator $locator";
@@ -233,12 +236,18 @@ sub wait_for_page_to_load_ok {
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
-sub wait_for_element_present_ok {
+sub wait_for_element_present {
     my ($self, $locator) = @_;
 
     my $document = $self->view->get_dom_document;
 
     Gtk3->main_iteration while Gtk3->events_pending or not eval { $self->resolve_locator($locator, $document) };
+}
+
+sub wait_for_element_present_ok {
+    my ($self, $locator) = @_;
+
+    return $self->wait_for_element_present($locator);
 }
 
 sub is_element_present_ok {
@@ -296,14 +305,51 @@ sub pause {
     usleep $time * 1000;
 }
 
+sub is_ordered {
+    return 1;
+}
+
 sub is_ordered_ok {
-    warn "is_ordered_ok";
+    my ($self, $locator);
+    return $self->is_ordered($locator);
 }
 
 sub get_body_text {
     my ($self) = @_;
 
     return $self->view->get_dom_document->get_property('body')->get_property('inner_html');
+}
+
+sub mouse_over_ok {
+    my ($self, $locator) = @_;
+
+    my $document = $self->view->get_dom_document;
+    my $target = $self->resolve_locator($locator, $document);
+
+    my $move = $document->create_event('MouseEvent');
+    $move->init_mouse_event('move', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
+    $target->dispatch_event($move);
+}
+
+=head2 native_drag_and_drop_to_object_ok($source, $target)
+
+drag&drop test that works with native HTML5 D&D events.
+
+=cut
+
+sub native_drag_and_drop_to_object_ok {
+    my ($self, $source, $target) = @_;
+
+    $self->eval_js(<<"    JS");
+        var evt = window.document.createEvent("DragEvent");
+        var source = window.document.querySelector('$source');
+        evt.initDragEvent('dragstart', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, source, {'setData': function(property, data) {}});
+        source.dispatchEvent(evt);
+
+        var target = window.document.querySelector('$target');
+        evt.initDragEvent('drop', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, target, {'setData': function(property, data) {}});
+        target.dispatchEvent(evt);
+    JS
 }
 
 1;
