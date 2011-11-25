@@ -148,23 +148,6 @@ sub eval_js {
     return pop @{ $self->alerts };
 }
 
-sub code_for_selector {
-    my ($self, $locator, $context) = @_;
-
-    $context ||= 'document';
-
-    if ($locator =~ /^xpath=(.*)/) {
-        return "document.evaluate('$1', $context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue";
-    }
-    if ($locator =~ /^label=(.*)/) {
-        return $self->code_for_selector(qq{xpath=.//*[text()="$1"]}, $context);
-    }
-    if ($locator =~ /^id=(.*)/) {
-        return "document.getElementById('$1')";
-    }
-    die "unknown locator $locator";
-}
-
 sub resolve_locator {
     my ($self, $document, $locator, $context) = @_;
 
@@ -177,9 +160,15 @@ sub resolve_locator {
         die "$xpath gave $length results" if $length != 1;
         return $xpath_results->snapshot_item(0);
     }
-    if ($locator =~ /^label=(.*)/) {
-        return $self->resolve_locator($document, qq{xpath=.//*[text()="$1"]}, $context);
+    elsif (my ($label) = $locator =~ /^label=(.*)/) {
+        return $self->resolve_locator($document, qq{xpath=.//*[text()="$label"]}, $context);
     }
+    elsif (my ($id) = $locator =~ /^id=(.*)/) {
+        return $document->get_element_by_id($id);
+    }
+
+    warn "unknown locator $locator";
+    die "unknown locator $locator";
 }
 
 sub select_ok {
@@ -224,9 +213,10 @@ sub wait_for_page_to_load_ok {
 
 sub wait_for_element_present_ok {
     my ($self, $locator) = @_;
-    my $element = $self->code_for_selector($locator);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->eval_js("return $element") eq 'null';
+    my $document = $self->view->get_dom_document;
+
+    Gtk3->main_iteration while Gtk3->events_pending or not eval { $self->resolve_locator($document, $locator) };
 }
 
 sub is_element_present_ok {
