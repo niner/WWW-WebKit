@@ -180,7 +180,10 @@ sub resolve_locator {
         return $xpath_results->snapshot_item(0);
     }
     elsif (my ($label) = $locator =~ /^label=(.*)/) {
-        return $self->resolve_locator(qq{xpath=.//*[text()="$label"]}, $document, $context);
+        return $self->resolve_locator($label eq '' ? qq{xpath=.//*[not(text())]} : qq{xpath=.//*[text()="$label"]}, $document, $context);
+    }
+    elsif (my ($value) = $locator =~ /^value=(.*)/) {
+        return $self->resolve_locator(qq{xpath=.//*[\@value="$value"]}, $document, $context);
     }
     elsif (my ($id) = $locator =~ /^id=(.*)/) {
         return $document->get_element_by_id($id);
@@ -298,7 +301,9 @@ sub is_ordered_ok {
 }
 
 sub get_body_text {
-    warn "get_body_text";
+    my ($self) = @_;
+
+    return $self->view->get_dom_document->get_property('body')->get_property('inner_html');
 }
 
 1;
