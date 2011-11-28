@@ -9,7 +9,7 @@ use HTTP::Soup;
 use Glib qw(TRUE FALSE);
 use MIME::Base64;
 use HTTP::Request::Common qw(POST);
-use Time::HiRes qw(usleep);
+use Time::HiRes qw(time usleep);
 use Test::More;
 
 use constant DOM_TYPE_ELEMENT => 1;
@@ -68,6 +68,12 @@ has server => (
 has mech => (
     is  => 'ro',
     isa => 'WWW::Mechanize',
+);
+
+has default_timeout => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => 30_000,
 );
 
 sub DESTROY {
@@ -255,17 +261,23 @@ sub wait_for_page_to_load_ok {
 }
 
 sub wait_for_element_present {
-    my ($self, $locator) = @_;
+    my ($self, $locator, $timeout) = @_;
+    $timeout ||= $self->default_timeout;
 
     my $document = $self->view->get_dom_document;
+    my $element;
+    my $expiry = time + $timeout / 1000;
 
-    Gtk3->main_iteration while Gtk3->events_pending or not eval { $self->resolve_locator($locator, $document) };
+    Gtk3->main_iteration while time < $expiry and (Gtk3->events_pending or not eval { $element = $self->resolve_locator($locator, $document) });
+
+    return $element;
 }
 
 sub wait_for_element_present_ok {
-    my ($self, $locator) = @_;
+    my ($self, $locator, $timeout) = @_;
+    $timeout ||= $self->default_timeout;
 
-    ok($self->wait_for_element_present($locator), "wait_for_element_present_ok($locator)");
+    ok($self->wait_for_element_present($locator, $timeout), "wait_for_element_present_ok($locator, $timeout)");
 }
 
 sub is_element_present_ok {
@@ -319,11 +331,21 @@ sub key_press {
             elem = elem.parentNode;
         }
 EVENT
+
     # Webkit bug https://bugs.webkit.org/show_bug.cgi?id=16735
     # Created keybord events do not work yet
         #//var keypress = document.createEvent('KeyboardEvent');
         #//keypress.initKeyboardEvent('keypress', 1, 1, window, '\\$key', $key, 0, '', 0, '');
         #//elem.dispatchEvent(keypress);
+
+#    my $elem = $self->resolve_locator($locator);
+#    $elem->focus;
+#    my $keypress = Gtk3::Gdk::Event->new('GDK_KEY_PRESS');
+##, window => $self->window, send_event => TRUE, time => 0, state => 0, keyval => int($key), length => 1, string => "\n", hardware_keycode => int($key), 0, 0);
+#    warn $keypress->key->{keyval};
+#    warn $keypress;
+#    warn $keypress->key;
+#    Gtk3::main_do_event($keypress);
 }
 
 sub pause {
@@ -337,7 +359,7 @@ sub is_ordered {
 }
 
 sub is_ordered_ok {
-    my ($self, $first, $second);
+    my ($self, $first, $second) = @_;
 
     ok($self->is_ordered($first, $second), "is_ordered_ok($first, $second)");
 }
