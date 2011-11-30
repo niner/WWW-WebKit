@@ -54,6 +54,12 @@ sub type_ok {
     ok(eval { $self->type($locator, $text) }, "type_ok($locator, $text)");
 }
 
+sub type_keys_ok {
+    my ($self, $locator, $text) = @_;
+
+    ok(eval { $self->type_keys($locator, $text) }, "type_keys_ok($locator, $text)");
+}
+
 sub is_ordered_ok {
     my ($self, $first, $second) = @_;
 
@@ -64,6 +70,12 @@ sub mouse_over_ok {
     my ($self, $locator) = @_;
 
     ok($self->mouse_over($locator), "mouse_over_ok($locator)");
+}
+
+sub text_is {
+    my ($self, $locator, $text) = @_;
+
+    is($self->get_text($locator), $text);
 }
 
 sub text_like {
