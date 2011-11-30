@@ -20,13 +20,13 @@ has server => (
     is => 'rw',
 );
 
-sub DESTROY {
+after DESTROY => sub {
     my ($self) = @_;
     return unless $self->server_pid;
 
     kill 15, $self->server_pid;
     close $self->server;
-}
+};
 
 sub start_catalyst_server {
     my ($self) = @_;

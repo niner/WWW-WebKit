@@ -3,7 +3,7 @@ package WWW::WebKit;
 use 5.10.0;
 use Moose;
 
-use Gtk3 -init;
+use Gtk3;
 use Gtk3::WebKit;
 use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
@@ -11,6 +11,11 @@ use X11::Xlib;
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
+
+has xvfb => (
+    is  => 'ro',
+    isa => 'Bool',
+);
 
 has view => (
     is      => 'ro',
@@ -55,8 +60,21 @@ has default_timeout => (
     default => 30_000,
 );
 
+has xvfb_pid => (
+    is  => 'rw',
+    isa => 'Int',
+);
+
+has xvfb_server => (
+    is => 'rw',
+);
+
 sub init {
     my ($self) = @_;
+
+    $self->setup_xvfb if $self->xvfb;
+
+    Gtk3::init;
 
     $self->view->signal_connect('script-alert' => sub {
         warn 'alert: ' . $_[2];
@@ -72,6 +90,27 @@ sub init {
     Gtk3->main_iteration while Gtk3->events_pending;
 
     return $self;
+}
+
+sub setup_xvfb {
+    my ($self) = @_;
+
+    my ($server, $display);
+    while (1) {
+        $display = 1 + int(rand(98));
+
+        last if $self->xvfb_pid(open $server, '|-', "Xvfb :$display -screen 0 800x600x24 2>/dev/null");
+    }
+    sleep 1;
+    $self->xvfb_server($server);
+    $ENV{DISPLAY} = ":$display";
+}
+
+sub DESTROY {
+    my ($self) = @_;
+    return unless $self->xvfb_pid;
+
+    kill 15, $self->xvfb_pid;
 }
 
 sub open {
