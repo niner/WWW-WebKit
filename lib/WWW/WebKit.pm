@@ -181,6 +181,15 @@ sub resolve_locator {
     die "unknown locator $locator";
 }
 
+sub get_xpath_count {
+    my ($self, $xpath) = @_;
+
+    my $document = $self->view->get_dom_document;
+    my $resolver = $document->create_ns_resolver($document);
+    my $xpath_results = $document->evaluate($xpath, $document, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
+    return $xpath_results->get_snapshot_length;
+}
+
 sub select {
     my ($self, $select, $option) = @_;
 
@@ -259,21 +268,35 @@ sub type {
 }
 
 sub key_press {
-    my ($self, $locator, $key) = @_;
+    my ($self, $locator, $key, $elem) = @_;
 
     $key =~ s/\A \\0*(\d+) \z/$1/xme;
 
-    my $elem = $self->resolve_locator($locator);
+    $elem ||= $self->resolve_locator($locator) or return;
     $elem->focus;
     my $display = X11::Xlib->new;
     #warn $display->XKeysymToKeycode(chr($key));
-    $display->XTestFakeKeyEvent(36, 1);
-    $display->XTestFakeKeyEvent(36, 0);
+    $display->XTestFakeKeyEvent(36, 1, 1);
+    $display->XTestFakeKeyEvent(36, 0, 1);
 
     # Unfortunately just does nothing:
     #Gtk3::test_widget_send_key($self->view, int($key), 'GDK_MODIFIER_MASK');
 
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+
+    return 1;
+}
+
+sub type_keys {
+    my ($self, $locator, $string) = @_;
+
+    my $element = $self->resolve_locator($locator) or return;
+
+    foreach (split //, $string) {
+        $self->key_press($locator, $_, $element) or return;
+    }
+
+    return 1;
 }
 
 sub pause {
@@ -310,6 +333,12 @@ sub get_value {
 
     my $element = $self->resolve_locator($locator);
     return $element->get_value;
+}
+
+sub is_visible {
+    my ($self, $locator) = @_;
+
+    return 1;
 }
 
 =head2 native_drag_and_drop_to_object($source, $target)
