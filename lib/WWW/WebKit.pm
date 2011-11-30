@@ -1,30 +1,21 @@
-package Test::WWW::WebKit::Catalyst;
+package WWW::WebKit;
 
 use 5.10.0;
 use Moose;
 
 use Gtk3 -init;
 use Gtk3::WebKit;
-use HTTP::Soup;
 use Glib qw(TRUE FALSE);
-use MIME::Base64;
-use HTTP::Request::Common qw(POST);
 use Time::HiRes qw(time usleep);
-use Test::More;
 use X11::Xlib;
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
 
-has app => (
-    is       => 'ro',
-    isa      => 'ClassName',
-    required => 1,
-);
-
 has view => (
     is      => 'ro',
     isa     => 'Gtk3::WebKit::WebView',
+    lazy    => 1,
     default => sub {
         Gtk3::WebKit::WebView->new
     },
@@ -33,6 +24,7 @@ has view => (
 has window => (
     is      => 'ro',
     isa     => 'Gtk3::Window',
+    lazy    => 1,
     default => sub {
         my ($self) = @_;
         my $sw = Gtk3::ScrolledWindow->new;
@@ -57,72 +49,14 @@ has console_messages => (
     default => sub { [] },
 );
 
-has server_pid => (
-    is  => 'rw',
-    isa => 'Int',
-);
-
-has server => (
-    is => 'rw',
-);
-
-has mech => (
-    is  => 'ro',
-    isa => 'WWW::Mechanize',
-);
-
 has default_timeout => (
     is      => 'rw',
     isa     => 'Int',
     default => 30_000,
 );
 
-sub DESTROY {
-    my ($self) = @_;
-    return unless $self->server_pid;
-
-    kill 15, $self->server_pid;
-    close $self->server;
-}
-
-sub start_catalyst_server {
-    my ($self) = @_;
-
-    my $pid;
-    if (my $pid = open my $server, '-|') {
-        $self->server_pid($pid);
-        $self->server($server);
-        my $port = <$server>;
-        chomp $port;
-        return $port;
-    }
-    else {
-        local $SIG{TERM} = sub {
-            exit 0;
-        };
-
-        my ($port, $catalyst);
-        while (1) {
-            $port = 1024 + int(rand(65535 - 1024));
-
-            my $loader = Catalyst::EngineLoader->new(application_name => $self->app);
-            eval {
-                $catalyst = $loader->auto(port => $port, host => 'localhost');
-            };
-            warn $@ if $@;
-            last unless $@;
-        }
-        say $port;
-        $self->app->run($port, 'localhost', $catalyst);
-
-        exit 1;
-    }
-}
-
 sub init {
     my ($self) = @_;
-
-    $ENV{CATALYST_PORT} = $self->start_catalyst_server;
 
     $self->view->signal_connect('script-alert' => sub {
         warn 'alert: ' . $_[2];
@@ -140,13 +74,12 @@ sub init {
     return $self;
 }
 
-sub open_ok {
+sub open {
     my ($self, $url) = @_;
 
     $self->view->open($url);
 
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
-    ok(1, "open_ok($url)");
 }
 
 sub eval_js {
@@ -232,12 +165,6 @@ sub select {
     return;
 }
 
-sub select_ok {
-    my ($self, $select, $option) = @_;
-
-    ok($self->select($select, $option), "select_ok($select, $option)");
-}
-
 sub click {
     my ($self, $locator) = @_;
 
@@ -250,17 +177,10 @@ sub click {
     return 1;
 }
 
-sub click_ok {
-    my ($self, $locator) = @_;
-
-    ok($self->click($locator), "click_ok($locator)");
-}
-
-sub wait_for_page_to_load_ok {
+sub wait_for_page_to_load {
     my ($self, $timeout) = @_;
 
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
-    ok(1, "wait_for_page_to_load_ok");
 }
 
 sub wait_for_element_present {
@@ -276,17 +196,10 @@ sub wait_for_element_present {
     return $element;
 }
 
-sub wait_for_element_present_ok {
-    my ($self, $locator, $timeout) = @_;
-    $timeout ||= $self->default_timeout;
-
-    ok($self->wait_for_element_present($locator, $timeout), "wait_for_element_present_ok($locator, $timeout)");
-}
-
-sub is_element_present_ok {
+sub is_element_present {
     my ($self, $locator) = @_;
 
-    ok(eval { $self->resolve_locator($locator) });
+    return eval { $self->resolve_locator($locator) };
 }
 
 sub get_text {
@@ -301,12 +214,6 @@ sub type {
     $self->resolve_locator($locator)->set_value($text);
 
     return 1;
-}
-
-sub type_ok {
-    my ($self, $locator, $text) = @_;
-
-    ok(eval { $self->type($locator, $text) }, "type_ok($locator, $text)");
 }
 
 sub key_press {
@@ -337,12 +244,6 @@ sub is_ordered {
     return 1;
 }
 
-sub is_ordered_ok {
-    my ($self, $first, $second) = @_;
-
-    ok($self->is_ordered($first, $second), "is_ordered_ok($first, $second)");
-}
-
 sub get_body_text {
     my ($self) = @_;
 
@@ -362,19 +263,13 @@ sub mouse_over {
     return 1;
 }
 
-sub mouse_over_ok {
-    my ($self, $locator) = @_;
+=head2 native_drag_and_drop_to_object($source, $target)
 
-    ok($self->mouse_over($locator), "mouse_over_ok($locator)");
-}
-
-=head2 native_drag_and_drop_to_object_ok($source, $target)
-
-drag&drop test that works with native HTML5 D&D events.
+Drag&drop that works with native HTML5 D&D events.
 
 =cut
 
-sub native_drag_and_drop_to_object_ok {
+sub native_drag_and_drop_to_object {
     my ($self, $source, $target) = @_;
 
     $self->eval_js(<<"    JS");
@@ -387,8 +282,7 @@ sub native_drag_and_drop_to_object_ok {
         evt.initDragEvent('drop', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, target, {'setData': function(property, data) {}});
         target.dispatchEvent(evt);
     JS
-
-    ok(1, "native_drag_and_drop_to_object_ok($source, $target)");
 }
 
 1;
+
