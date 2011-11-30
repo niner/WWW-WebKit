@@ -173,6 +173,9 @@ sub resolve_locator {
     elsif (my ($css) = $locator =~ /^css=(.*)/) {
         return $document->query_selector($css);
     }
+    elsif (my ($class) = $locator =~ /^class=(.*)/) {
+        return $document->query_selector(".$class");
+    }
 
     warn "unknown locator $locator";
     die "unknown locator $locator";
@@ -300,6 +303,13 @@ sub mouse_over {
     $target->dispatch_event($move);
 
     return 1;
+}
+
+sub get_value {
+    my ($self, $locator) = @_;
+
+    my $element = $self->resolve_locator($locator);
+    return $element->get_value;
 }
 
 =head2 native_drag_and_drop_to_object($source, $target)
