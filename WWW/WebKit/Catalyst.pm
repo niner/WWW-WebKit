@@ -11,6 +11,7 @@ use MIME::Base64;
 use HTTP::Request::Common qw(POST);
 use Time::HiRes qw(time usleep);
 use Test::More;
+use X11::Xlib;
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
@@ -78,6 +79,8 @@ has default_timeout => (
 
 sub DESTROY {
     my ($self) = @_;
+    return unless $self->server_pid;
+
     kill 15, $self->server_pid;
     close $self->server;
 }
@@ -309,43 +312,19 @@ sub type_ok {
 sub key_press {
     my ($self, $locator, $key) = @_;
 
-    $key =~ s/\A \\(\d+) \z/$1/xme;
+    $key =~ s/\A \\0*(\d+) \z/$1/xme;
 
-    # Keyboard events seem to not be implemented fully in Gtk Webkit
-#    my $document = $self->view->get_dom_document;
-#    my $target = $self->resolve_locator($locator, $document);
-#
-#    my $keypress = $document->create_event('KeyboardEvent');
-#    warn $keypress;
-#    $keypress->init_ui_event('keypress', TRUE, TRUE, $document->get_property('default_view'), int($key));
-#    $target->dispatch_event($keypress);
+    my $elem = $self->resolve_locator($locator);
+    $elem->focus;
+    my $display = X11::Xlib->new;
+    #warn $display->XKeysymToKeycode(chr($key));
+    $display->XTestFakeKeyEvent(36, 1);
+    $display->XTestFakeKeyEvent(36, 0);
 
-    my $elem = $self->code_for_locator($locator);
-    $key = int($key);
-    $self->eval_js(<<EVENT);
-        var elem = $elem;
-        event = {'keyCode': $key};
-        while (elem) {
-            if (elem.onkeypress)
-                elem.onkeypress(event);
-            elem = elem.parentNode;
-        }
-EVENT
+    # Unfortunately just does nothing:
+    #Gtk3::test_widget_send_key($self->view, int($key), 'GDK_MODIFIER_MASK');
 
-    # Webkit bug https://bugs.webkit.org/show_bug.cgi?id=16735
-    # Created keybord events do not work yet
-        #//var keypress = document.createEvent('KeyboardEvent');
-        #//keypress.initKeyboardEvent('keypress', 1, 1, window, '\\$key', $key, 0, '', 0, '');
-        #//elem.dispatchEvent(keypress);
-
-#    my $elem = $self->resolve_locator($locator);
-#    $elem->focus;
-#    my $keypress = Gtk3::Gdk::Event->new('GDK_KEY_PRESS');
-##, window => $self->window, send_event => TRUE, time => 0, state => 0, keyval => int($key), length => 1, string => "\n", hardware_keycode => int($key), 0, 0);
-#    warn $keypress->key->{keyval};
-#    warn $keypress;
-#    warn $keypress->key;
-#    Gtk3::main_do_event($keypress);
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
 sub pause {
