@@ -66,6 +66,12 @@ sub mouse_over_ok {
     ok($self->mouse_over($locator), "mouse_over_ok($locator)");
 }
 
+sub text_like {
+    my ($self, $locator, $text) = @_;
+
+    like($self->get_text($locator), $text);
+}
+
 =head2 native_drag_and_drop_to_object_ok($source, $target)
 
 drag&drop test that works with native HTML5 D&D events.
