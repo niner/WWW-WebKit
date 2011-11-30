@@ -11,6 +11,7 @@ use Test::More;
 
 sub open_ok {
     my ($self, $url) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     $self->open($url);
 
@@ -19,24 +20,29 @@ sub open_ok {
 
 sub select_ok {
     my ($self, $select, $option) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     ok($self->select($select, $option), "select_ok($select, $option)");
 }
 
 sub click_ok {
     my ($self, $locator) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     ok($self->click($locator), "click_ok($locator)");
 }
 
 sub wait_for_page_to_load_ok {
     my ($self, $timeout) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     $self->wait_for_page_to_load($timeout);
 }
 
 sub wait_for_element_present_ok {
     my ($self, $locator, $timeout) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     $timeout ||= $self->default_timeout;
 
     ok($self->wait_for_element_present($locator, $timeout), "wait_for_element_present_ok($locator, $timeout)");
@@ -44,44 +50,58 @@ sub wait_for_element_present_ok {
 
 sub is_element_present_ok {
     my ($self, $locator) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     ok($self->is_element_present($locator), "is_element_present_ok($locator)");
 }
 
 sub type_ok {
     my ($self, $locator, $text) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     ok(eval { $self->type($locator, $text) }, "type_ok($locator, $text)");
 }
 
 sub type_keys_ok {
     my ($self, $locator, $text) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     ok(eval { $self->type_keys($locator, $text) }, "type_keys_ok($locator, $text)");
 }
 
 sub is_ordered_ok {
     my ($self, $first, $second) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     ok($self->is_ordered($first, $second), "is_ordered_ok($first, $second)");
 }
 
 sub mouse_over_ok {
     my ($self, $locator) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     ok($self->mouse_over($locator), "mouse_over_ok($locator)");
 }
 
 sub text_is {
     my ($self, $locator, $text) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     is($self->get_text($locator), $text);
 }
 
 sub text_like {
     my ($self, $locator, $text) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     like($self->get_text($locator), $text);
+}
+
+sub value_is {
+    my ($self, $locator, $value) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    is($self->get_value($locator), $value, "value_is($locator, $value)");
 }
 
 =head2 native_drag_and_drop_to_object_ok($source, $target)
@@ -92,6 +112,7 @@ drag&drop test that works with native HTML5 D&D events.
 
 sub native_drag_and_drop_to_object_ok {
     my ($self, $source, $target) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     $self->native_drag_and_drop_to_object($source, $target);
 
