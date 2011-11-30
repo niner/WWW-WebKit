@@ -256,7 +256,9 @@ sub is_element_present {
 sub get_text {
     my ($self, $locator) = @_;
 
-    return $self->resolve_locator($locator)->get_text_content;
+    my $value = $self->resolve_locator($locator)->get_text_content;
+    $value =~ s/\A \s+ | \s+ \z//gxm;
+    return $value;
 }
 
 sub type {
@@ -332,7 +334,9 @@ sub get_value {
     my ($self, $locator) = @_;
 
     my $element = $self->resolve_locator($locator);
-    return $element->get_value;
+    my $value = $element->get_value;
+    $value =~ s/\A \s+ | \s+ \z//gxm;
+    return $value;
 }
 
 sub is_visible {
