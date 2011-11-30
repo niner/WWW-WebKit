@@ -176,6 +176,9 @@ sub resolve_locator {
     elsif (my ($class) = $locator =~ /^class=(.*)/) {
         return $document->query_selector(".$class");
     }
+    elsif (my ($name) = $locator =~ /^name=(.*)/) {
+        return $self->resolve_locator(qq{xpath=.//*[\@name="$name"]}, $document, $context);
+    }
 
     warn "unknown locator $locator";
     die "unknown locator $locator";
