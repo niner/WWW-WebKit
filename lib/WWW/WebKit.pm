@@ -356,16 +356,40 @@ Drag&drop that works with native HTML5 D&D events.
 sub native_drag_and_drop_to_object {
     my ($self, $source, $target) = @_;
 
-    $self->eval_js(<<"    JS");
-        var evt = window.document.createEvent("DragEvent");
-        var source = window.document.querySelector('$source');
-        evt.initDragEvent('dragstart', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, source, {'setData': function(property, data) {}});
-        source.dispatchEvent(evt);
+    $source = $self->resolve_locator($source);
+    $target = $self->resolve_locator($target);
 
-        var target = window.document.querySelector('$target');
-        evt.initDragEvent('drop', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, target, {'setData': function(property, data) {}});
-        target.dispatchEvent(evt);
-    JS
+    my $source_x = int($source->get_offset_left + $source->get_offset_width  / 2);
+    my $source_y = int($source->get_offset_top  + $source->get_offset_height / 2);
+
+    my $target_x = int($target->get_offset_left + $target->get_offset_width  / 2);
+    my $target_y = int($target->get_offset_top  + $target->get_offset_height / 2);
+
+    my $display = X11::Xlib->new;
+    $display->XTestFakeMotionEvent(0, $source_x, $source_y, 0);
+    $display->XFlush;
+    usleep 10; # Time for DnD to kick in
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $display->XTestFakeButtonEvent(1, 1, 0);
+    $display->XFlush;
+    usleep 10; # Time for DnD to kick in
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $display->XTestFakeMotionEvent(0, $source_x, $source_y - 1, 0);
+    $display->XFlush;
+    usleep 10; # Time for DnD to kick in
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $display->XTestFakeMotionEvent(0, $target_x, $target_y + 1, 0);
+    $display->XFlush;
+    usleep 10; # Time for DnD to kick in
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $display->XTestFakeMotionEvent(0, $target_x, $target_y, 0);
+    $display->XFlush;
+    usleep 10; # Time for DnD to kick in
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $display->XTestFakeButtonEvent(1, 0, 0);
+    $display->XFlush;
+    usleep 10; # Time for DnD to kick in
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
 1;
