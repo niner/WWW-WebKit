@@ -36,7 +36,7 @@ has window => (
         $sw->add($self->view);
 
         my $win = Gtk3::Window->new;
-        $win->set_default_size(800, 600);
+        $win->set_default_size(1600, 1200);
         $win->add($sw);
         return $win;
     }
@@ -99,7 +99,7 @@ sub setup_xvfb {
     while (1) {
         $display = 1 + int(rand(98));
 
-        last if $self->xvfb_pid(open $server, '|-', "Xvfb :$display -screen 0 800x600x24 2>/dev/null");
+        last if $self->xvfb_pid(open $server, '|-', "Xvfb :$display -screen 0 1600x1200x24 2>/dev/null");
     }
     sleep 1;
     $self->xvfb_server($server);
@@ -125,7 +125,6 @@ sub eval_js {
     my ($self, $js) = @_;
 
     my $fn = "___run_js_$$";
-    warn "function $fn() { $js }; alert($fn());";
     $self->view->execute_script("function $fn() { $js }; alert($fn());");
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
     return pop @{ $self->alerts };
@@ -317,7 +316,7 @@ sub is_ordered {
 sub get_body_text {
     my ($self) = @_;
 
-    return $self->view->get_dom_document->get_property('body')->get_property('inner_html');
+    return $self->get_text('xpath=//body');
 }
 
 sub mouse_over {
