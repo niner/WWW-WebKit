@@ -261,6 +261,7 @@ sub get_text {
 
     my $value = $self->resolve_locator($locator)->get_text_content;
     $value =~ s/\A \s+ | \s+ \z//gxm;
+    $value =~ s/\s+/ /gxms; # squeeze white space
     return $value;
 }
 
