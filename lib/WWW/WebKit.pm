@@ -81,6 +81,10 @@ sub init {
         warn 'alert: ' . $_[2];
         push @{ $self->alerts }, $_[2];
     });
+    $self->view->signal_connect('script-confirm' => sub {
+        warn 'confirm: ' . $_[2];
+        push @{ $self->alerts }, $_[2];
+    });
     $self->view->signal_connect('console-message' => sub {
         warn "console: $_[1] at line $_[2] in $_[3], user_data: $_[4]";
         push @{ $self->console_messages }, $_[1];
