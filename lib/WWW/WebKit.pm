@@ -238,6 +238,7 @@ sub click {
 sub wait_for_page_to_load {
     my ($self, $timeout) = @_;
 
+    $self->pause(300);
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
@@ -345,6 +346,19 @@ sub mouse_over {
     my $move = $document->create_event('MouseEvent');
     $move->init_mouse_event('move', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($move);
+
+    return 1;
+}
+
+sub fire_event {
+    my ($self, $locator, $event_type) = @_;
+
+    my $document = $self->view->get_dom_document;
+    my $target = $self->resolve_locator($locator, $document) or return;
+
+    my $event = $document->create_event('HTMLEvents');
+    $event->init_event($event_type, TRUE, TRUE);
+    $target->dispatch_event($event);
 
     return 1;
 }

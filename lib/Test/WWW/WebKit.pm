@@ -83,6 +83,13 @@ sub mouse_over_ok {
     ok($self->mouse_over($locator), "mouse_over_ok($locator)");
 }
 
+sub fire_event_ok {
+    my ($self, $locator, $event_type) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->fire_event($locator, $event_type), "fire_event_ok($locator, $event_type)");
+}
+
 sub text_is {
     my ($self, $locator, $text) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
