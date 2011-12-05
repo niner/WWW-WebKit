@@ -387,6 +387,12 @@ sub submit {
     return 1;
 }
 
+sub get_html_source {
+    my ($self) = @_;
+
+    return $self->view->get_main_frame->get_data_source->get_data->{str};
+}
+
 =head2 native_drag_and_drop_to_object($source, $target)
 
 Drag&drop that works with native HTML5 D&D events.
