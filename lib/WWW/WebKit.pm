@@ -246,11 +246,10 @@ sub wait_for_element_present {
     my ($self, $locator, $timeout) = @_;
     $timeout ||= $self->default_timeout;
 
-    my $document = $self->view->get_dom_document;
     my $element;
     my $expiry = time + $timeout / 1000;
 
-    Gtk3->main_iteration while time < $expiry and (Gtk3->events_pending or not eval { $element = $self->resolve_locator($locator, $document) });
+    Gtk3->main_iteration while time < $expiry and (Gtk3->events_pending or not eval { $element = $self->resolve_locator($locator, $self->view->get_dom_document) });
 
     return $element;
 }
