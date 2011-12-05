@@ -344,7 +344,7 @@ sub mouse_over {
     my $target = $self->resolve_locator($locator, $document) or return;
 
     my $move = $document->create_event('MouseEvent');
-    $move->init_mouse_event('move', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
+    $move->init_mouse_event('mouseover', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($move);
 
     return 1;
