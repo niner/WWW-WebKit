@@ -307,7 +307,17 @@ sub type_keys {
 
 sub pause {
     my ($self, $time) = @_;
-    usleep $time * 1000;
+
+    my $expiry = time + $time / 1000;
+
+    while (time < $expiry) {
+        if (Gtk3->events_pending) {
+            Gtk3->main_iteration;
+        }
+        else {
+            usleep 10000;
+        }
+    }
 }
 
 sub is_ordered {
