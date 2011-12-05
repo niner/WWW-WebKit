@@ -279,15 +279,16 @@ sub type {
 
 sub key_press {
     my ($self, $locator, $key, $elem) = @_;
+    my $display = X11::Xlib->new;
 
-    $key =~ s/\A \\0*(\d+) \z/$1/xme;
+    my $keycode = $key eq '\013' ? 36 : $display->XKeysymToKeycode(X11::Xlib::XStringToKeysym($key));
 
     $elem ||= $self->resolve_locator($locator) or return;
     $elem->focus;
-    my $display = X11::Xlib->new;
-    #warn $display->XKeysymToKeycode(chr($key));
-    $display->XTestFakeKeyEvent(36, 1, 1);
-    $display->XTestFakeKeyEvent(36, 0, 1);
+
+    $display->XTestFakeKeyEvent($keycode, 1, 1);
+    $display->XTestFakeKeyEvent($keycode, 0, 1);
+    $display->XFlush;
 
     # Unfortunately just does nothing:
     #Gtk3::test_widget_send_key($self->view, int($key), 'GDK_MODIFIER_MASK');
