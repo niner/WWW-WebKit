@@ -378,6 +378,15 @@ sub is_visible {
     return 1;
 }
 
+sub submit {
+    my ($self, $locator) = @_;
+
+    my $form = $self->resolve_locator($locator) or return;
+    $form->submit;
+
+    return 1;
+}
+
 =head2 native_drag_and_drop_to_object($source, $target)
 
 Drag&drop that works with native HTML5 D&D events.

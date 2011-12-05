@@ -111,6 +111,13 @@ sub value_is {
     is($self->get_value($locator), $value, "value_is($locator, $value)");
 }
 
+sub submit_ok {
+    my ($self, $locator) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->submit($locator), "submit_ok($locator)");
+}
+
 =head2 native_drag_and_drop_to_object_ok($source, $target)
 
 drag&drop test that works with native HTML5 D&D events.
