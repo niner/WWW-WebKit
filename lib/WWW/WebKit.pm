@@ -8,6 +8,7 @@ use Gtk3::WebKit;
 use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use X11::Xlib;
+use Carp qw(carp croak);
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
@@ -157,7 +158,7 @@ sub resolve_locator {
         my $resolver = $document->create_ns_resolver($context);
         my $xpath_results = $document->evaluate($xpath, $context, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
         my $length = $xpath_results->get_snapshot_length;
-        die "$xpath gave $length results" if $length != 1;
+        croak "$xpath gave $length results" if $length != 1;
         return $xpath_results->snapshot_item(0);
     }
     elsif (my ($label) = $locator =~ /^label=(.*)/) {
@@ -179,7 +180,7 @@ sub resolve_locator {
         return $self->resolve_locator(qq{xpath=.//*[\@name="$name"]}, $document, $context);
     }
 
-    warn "unknown locator $locator";
+    carp "unknown locator $locator";
     die "unknown locator $locator";
 }
 
