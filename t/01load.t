@@ -23,6 +23,14 @@ is($sel->resolve_locator('id=dragme')->get_parent_node->get_id, 'target');
 
 $sel->refresh;
 
+$sel->open("$Bin/test/confirm.html");
+is(pop @{ $sel->confirmations }, 'test');
+is($sel->get_text('id=result'), 'yes');
+
+$sel->answer_on_next_prompt('test');
+#$sel->open("$Bin/test/prompt.html");
+#is($sel->get_text('id=result'), 'yes');
+
 $sel->open("$Bin/test/attribute.html");
 is($sel->get_attribute('id=test@class'), 'foo bar');
 

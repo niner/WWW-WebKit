@@ -1,0 +1,6 @@
+Revision history for Perl extension WWW::WebKit
+
+0.01  Tue Nov 29 11:12:34 2011
+	- original version; created by h2xs 1.23 with options
+		-A -n WWW::WebKit::XSHelper
+

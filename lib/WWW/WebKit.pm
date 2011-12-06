@@ -9,6 +9,9 @@ use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use X11::Xlib;
 use Carp qw(carp croak);
+use WWW::WebKit::XSHelper;
+
+our $VERSION = '0.01';
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
@@ -49,6 +52,18 @@ has alerts => (
     default => sub { [] },
 );
 
+has confirmations => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] },
+);
+
+has prompt_answers => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] },
+);
+
 has console_messages => (
     is      => 'rw',
     isa     => 'ArrayRef',
@@ -78,15 +93,22 @@ sub init {
     Gtk3::init;
 
     $self->view->signal_connect('script-alert' => sub {
-        warn 'alert: ' . $_[2];
         push @{ $self->alerts }, $_[2];
+        return TRUE;
     });
     $self->view->signal_connect('script-confirm' => sub {
-        warn 'confirm: ' . $_[2];
-        push @{ $self->alerts }, $_[2];
+        push @{ $self->confirmations }, $_[2];
+        WWW::WebKit::XSHelper::set_int_return_value($_[3], TRUE);
+        return TRUE;
+    });
+    $self->view->signal_connect('script-prompt' => sub {
+        # warn 'prompt: ' . $_[2];
+        # warn "answering with: " . $self->prompt_answers->[-1];
+        #FIXME causes segfault:
+        #WWW::WebKit::XSHelper::set_string_return_value($_[4], pop @{ $self->prompt_answers });
+        return TRUE;
     });
     $self->view->signal_connect('console-message' => sub {
-        warn "console: $_[1] at line $_[2] in $_[3], user_data: $_[4]";
         push @{ $self->console_messages }, $_[1];
         return FALSE;
     });
@@ -446,6 +468,18 @@ sub get_html_source {
     my ($self) = @_;
 
     return $self->view->get_main_frame->get_data_source->get_data->{str};
+}
+
+sub get_confirmation {
+    my ($self) = @_;
+
+    return pop @{ $self->confirmations };
+}
+
+sub answer_on_next_prompt {
+    my ($self, $answer) = @_;
+
+    push @{ $self->prompt_answers }, $answer;
 }
 
 =head2 native_drag_and_drop_to_object($source, $target)
