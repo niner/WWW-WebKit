@@ -356,6 +356,18 @@ sub mouse_over {
     return 1;
 }
 
+sub mouse_down {
+    my ($self, $locator) = @_;
+
+    my $document = $self->view->get_dom_document;
+    my $target = $self->resolve_locator($locator, $document) or return;
+
+    my $click = $document->create_event('MouseEvent');
+    $click->init_mouse_event('mousedown', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
+    $target->dispatch_event($click);
+    return 1;
+}
+
 sub fire_event {
     my ($self, $locator, $event_type) = @_;
 
