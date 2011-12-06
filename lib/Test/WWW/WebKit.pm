@@ -1,5 +1,32 @@
 package Test::WWW::WebKit;
 
+=head1 NAME
+
+Test::WWW::WebKit - Perl extension for using an embedding WebKit engine for tests
+
+=head1 SYNOPSIS
+
+    use Test::WWW::WebKit;
+
+    my $webkit = Test::WWW::WebKit->new(xvfb => 1);
+    $webkit->init;
+
+    $webkit->open_ok("http://www.google.com");
+    $webkit->type_ok("q", "hello world");
+    $webkit->click_ok("btnG");
+    $webkit->wait_for_page_to_load_ok(5000);
+    $webkit->title_is("foo");
+
+=head1 DESCRIPTION
+
+Test::WWW::WebKit is a drop-in replacement for Test::WWW::Selenium using Gtk3::WebKit as browser instead of relying on an external Java server and an installed browser.
+
+=head2 EXPORT
+
+None by default.
+
+=cut
+
 use 5.10.0;
 use Moose;
 
@@ -164,9 +191,11 @@ sub submit_ok {
     ok($self->submit($locator), "submit_ok($locator)");
 }
 
-=head2 native_drag_and_drop_to_object_ok($source, $target)
+=head2 Additions to the Selenium API
 
-drag&drop test that works with native HTML5 D&D events.
+=head3 native_drag_and_drop_to_object_ok($source, $target)
+
+Drag&drop test that works with native HTML5 D&D events.
 
 =cut
 
@@ -180,3 +209,23 @@ sub native_drag_and_drop_to_object_ok {
 }
 
 1;
+
+=head1 SEE ALSO
+
+L<WWW::Selenium> for the base package.
+See L<Test::WWW::Selenium> for API documentation.
+L<Test::WWW::WebKit::Catalyst> for a replacement for L<Test::WWW::Selenium::Catalyst>
+
+=head1 AUTHOR
+
+Stefan Seifert, E<lt>nine@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2011 by Stefan Seifert
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.12.3 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut

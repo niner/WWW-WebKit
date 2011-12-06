@@ -1,5 +1,32 @@
 package Test::WWW::WebKit::Catalyst;
 
+=head1 NAME
+
+Test::WWW::WebKit - Perl extension for using an embedding WebKit engine for tests
+
+=head1 SYNOPSIS
+
+    use Test::WWW::WebKit::Catalyst;
+
+    my $webkit = Test::WWW::WebKit::Catalyst->new(app => 'TestApp', xvfb => 1);
+    $webkit->init;
+
+    $webkit->open_ok("http://localhost:$ENV{CATALYST_PORT}/index");
+    $webkit->type_ok("q", "hello world");
+    $webkit->click_ok("xpath=//button");
+    $webkit->wait_for_page_to_load_ok(5000);
+    $webkit->title_is("foo");
+
+=head1 DESCRIPTION
+
+Test::WWW::WebKit::Catalyst is a drop-in replacement for Test::WWW::Selenium::Catalyst using Gtk3::WebKit as browser instead of relying on an external Java server and an installed browser.
+
+=head2 EXPORT
+
+None by default.
+
+=cut
+
 use 5.10.0;
 use Moose;
 
@@ -69,3 +96,22 @@ before init => sub {
 };
 
 1;
+
+=head1 SEE ALSO
+
+L<WWW::Selenium> and L<Test::WWW::Selenium> for the base packages.
+See L<Test::WWW::Selenium> for API documentation.
+
+=head1 AUTHOR
+
+Stefan Seifert, E<lt>nine@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2011 by Stefan Seifert
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.12.3 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut

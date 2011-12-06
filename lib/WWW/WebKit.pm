@@ -16,7 +16,6 @@ WWW::WebKit - Perl extension for controlling an embedding WebKit engine
     $webkit->click("btnG");
     $webkit->wait_for_page_to_load(5000);
     print $webkit->get_title;
-    $webkit->stop;
 
 =head1 DESCRIPTION
 
