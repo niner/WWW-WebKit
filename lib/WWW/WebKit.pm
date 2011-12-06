@@ -417,7 +417,20 @@ sub get_attribute {
 sub is_visible {
     my ($self, $locator) = @_;
 
-    return 1;
+    my $element = $self->resolve_locator($locator) or croak "element not found: $locator";
+
+    my $view = $self->view->get_dom_document->get_property('default_view');
+    my $style = $view->get_computed_style($element, '');
+
+    # visibility can be calculated by using CSS inheritance. A child of a invisbile parent can still be visible!
+    my $visible = $style->get_property_value('visibility') eq 'hidden' ? 0 : 1;
+
+    do {
+        $style = $view->get_computed_style($element, '');
+        $visible &&= $style->get_property_value('display') eq 'none' ? 0 : 1;
+    } while ($visible and $element = $element->get_parent_node);
+
+    return $visible;
 }
 
 sub submit {

@@ -26,4 +26,10 @@ $sel->refresh;
 $sel->open("$Bin/test/attribute.html");
 is($sel->get_attribute('id=test@class'), 'foo bar');
 
+is($sel->is_visible('id=test'), 1, 'test visible');
+is($sel->is_visible('id=invisible'), 0, 'invisible');
+is($sel->is_visible('id=invisible_child'), 0, 'child invisible');
+is($sel->is_visible('id=void'), 0, 'display none');
+is($sel->is_visible('id=void_child'), 0, 'child display none');
+
 done_testing;
