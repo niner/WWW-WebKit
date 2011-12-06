@@ -20,9 +20,18 @@ sub open_ok {
 
 sub refresh_ok {
     my ($self) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     $self->refresh;
     ok(1, "refresh_ok()");
+}
+
+sub go_back_ok {
+    my ($self) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    $self->go_back;
+    ok(1, "go_back_ok()");
 }
 
 sub select_ok {

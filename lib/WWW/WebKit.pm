@@ -133,6 +133,13 @@ sub refresh {
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
+sub go_back {
+    my ($self) = @_;
+
+    $self->view->go_back;
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+}
+
 sub eval_js {
     my ($self, $js) = @_;
 
