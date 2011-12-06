@@ -265,7 +265,13 @@ sub wait_for_element_present {
     my $element;
     my $expiry = time + $timeout / 1000;
 
-    Gtk3->main_iteration while time < $expiry and (Gtk3->events_pending or not $element = $self->is_element_present($locator));
+    while (1) {
+        Gtk3->main_iteration while Gtk3->events_pending;
+
+        last if $element = $self->is_element_present($locator);
+        last if time > $expiry;
+        usleep 10000;
+    }
 
     return $element;
 }
