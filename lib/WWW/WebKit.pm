@@ -158,14 +158,7 @@ sub resolve_locator {
     $document ||= $self->view->get_dom_document;
     $context ||= $document;
 
-    if (my ($xpath) = $locator =~ /^xpath=(.*)/) {
-        my $resolver = $document->create_ns_resolver($context);
-        my $xpath_results = $document->evaluate($xpath, $context, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
-        my $length = $xpath_results->get_snapshot_length;
-        croak "$xpath gave $length results" if $length != 1;
-        return $xpath_results->snapshot_item(0);
-    }
-    elsif (my ($label) = $locator =~ /^label=(.*)/) {
+    if (my ($label) = $locator =~ /^label=(.*)/) {
         return $self->resolve_locator($label eq '' ? qq{xpath=.//*[not(text())]} : qq{xpath=.//*[text()="$label"]}, $document, $context);
     }
     elsif (my ($value) = $locator =~ /^value=(.*)/) {
@@ -182,6 +175,13 @@ sub resolve_locator {
     }
     elsif (my ($name) = $locator =~ /^name=(.*)/) {
         return $self->resolve_locator(qq{xpath=.//*[\@name="$name"]}, $document, $context);
+    }
+    elsif (my ($xpath) = $locator =~ /^(?: xpath=)?(.*)/xm) {
+        my $resolver = $document->create_ns_resolver($context);
+        my $xpath_results = $document->evaluate($xpath, $context, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
+        my $length = $xpath_results->get_snapshot_length;
+        croak "$xpath gave $length results: " . join(', ', map $xpath_results->snapshot_item($_), 0 .. $length - 1) if $length != 1;
+        return $xpath_results->snapshot_item(0);
     }
 
     carp "unknown locator $locator";
