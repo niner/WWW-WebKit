@@ -390,6 +390,13 @@ sub get_value {
     return $value;
 }
 
+sub get_attribute {
+    my ($self, $locator) = @_;
+    ($locator, my $attr) = $locator =~ /\A (.*) @ (.*?) \z/xm;
+
+    return $self->resolve_locator($locator)->get_attribute($attr);
+}
+
 sub is_visible {
     my ($self, $locator) = @_;
 

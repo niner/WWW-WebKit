@@ -132,6 +132,20 @@ sub is_visible_ok {
     ok($self->is_visible($locator), "is_visible($locator)");
 }
 
+sub attribute_like {
+    my ($self, $locator, $expr) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    like($self->get_attribute($locator), $expr, "attribute_like($locator, $expr)");
+}
+
+sub attribute_unlike {
+    my ($self, $locator, $expr) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    unlike($self->get_attribute($locator), $expr, "attribute_unlike($locator, $expr)");
+}
+
 sub submit_ok {
     my ($self, $locator) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;

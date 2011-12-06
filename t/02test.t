@@ -13,4 +13,7 @@ $sel->open_ok("$Bin/test/attribute.html");
 
 $sel->refresh_ok;
 
+$sel->attribute_like('id=test@class', qr/foo/);
+$sel->attribute_unlike('id=test@class', qr/qux/);
+
 done_testing;
