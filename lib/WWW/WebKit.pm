@@ -162,6 +162,8 @@ sub code_for_locator {
 sub resolve_locator {
     my ($self, $locator, $document, $context) = @_;
 
+    carp "got no locator" unless $locator;
+
     $document ||= $self->view->get_dom_document;
     $context ||= $document;
 

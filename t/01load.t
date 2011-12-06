@@ -24,6 +24,6 @@ is($sel->resolve_locator('id=dragme')->get_parent_node->get_id, 'target');
 $sel->refresh;
 
 $sel->open("$Bin/test/attribute.html");
-is($sel->get_attribute('id=test', 'class'), 'foo bar');
+is($sel->get_attribute('id=test@class'), 'foo bar');
 
 done_testing;
