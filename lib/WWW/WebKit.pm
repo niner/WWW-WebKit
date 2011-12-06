@@ -1,5 +1,33 @@
 package WWW::WebKit;
 
+=head1 NAME
+
+WWW::WebKit - Perl extension for controlling an embedding WebKit engine
+
+=head1 SYNOPSIS
+
+    use WWW::WebKit;
+
+    my $webkit = WWW::WebKit->new(xvfb => 1);
+    $webkit->init;
+
+    $webkit->open("http://www.google.com");
+    $webkit->type("q", "hello world");
+    $webkit->click("btnG");
+    $webkit->wait_for_page_to_load(5000);
+    print $webkit->get_title;
+    $webkit->stop;
+
+=head1 DESCRIPTION
+
+WWW::WebKit is a drop-in replacement for WWW::Selenium using Gtk3::WebKit as browser instead of relying on an external Java server and an installed browser.
+
+=head2 EXPORT
+
+None by default.
+
+=cut
+
 use 5.10.0;
 use Moose;
 
@@ -482,7 +510,9 @@ sub answer_on_next_prompt {
     push @{ $self->prompt_answers }, $answer;
 }
 
-=head2 native_drag_and_drop_to_object($source, $target)
+=head2 Additions to the Selenium API
+
+=head3 native_drag_and_drop_to_object($source, $target)
 
 Drag&drop that works with native HTML5 D&D events.
 
@@ -540,3 +570,22 @@ sub get_screen_position {
 
 1;
 
+=head1 SEE ALSO
+
+See L<WWW::Selenium> for API documentation.
+L<Test::WWW::WebKit> for a replacement for L<Test::WWW::Selenium>
+L<Test::WWW::WebKit::Catalyst> for a replacement for L<Test::WWW::Selenium::Catalyst>
+
+=head1 AUTHOR
+
+Stefan Seifert, E<lt>nine@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2011 by Stefan Seifert
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.12.3 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut
