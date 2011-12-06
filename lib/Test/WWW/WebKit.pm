@@ -68,7 +68,9 @@ sub is_element_present_ok {
     my ($self, $locator) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok($self->is_element_present($locator), "is_element_present_ok($locator)");
+    my $result = $self->is_element_present($locator);
+    ok($result, "is_element_present_ok($locator)");
+    warn "# $@\n" unless $result;
 }
 
 sub type_ok {
