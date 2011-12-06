@@ -126,6 +126,13 @@ sub open {
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
+sub refresh {
+    my ($self) = @_;
+
+    $self->view->reload;
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+}
+
 sub eval_js {
     my ($self, $js) = @_;
 

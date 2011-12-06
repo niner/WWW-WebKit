@@ -18,6 +18,13 @@ sub open_ok {
     ok(1, "open_ok($url)");
 }
 
+sub refresh_ok {
+    my ($self) = @_;
+
+    $self->refresh;
+    ok(1, "refresh_ok()");
+}
+
 sub select_ok {
     my ($self, $select, $option) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;

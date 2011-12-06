@@ -21,4 +21,6 @@ $sel->native_drag_and_drop_to_object('id=dragme', 'id=target');
 
 is($sel->resolve_locator('id=dragme')->get_parent_node->get_id, 'target');
 
+$sel->refresh;
+
 done_testing;
