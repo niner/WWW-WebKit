@@ -324,12 +324,14 @@ sub pause {
 
     my $expiry = time + $time / 1000;
 
-    while (time < $expiry) {
-        if (Gtk3->events_pending) {
-            Gtk3->main_iteration;
+    while (1) {
+        Gtk3->main_iteration while Gtk3->events_pending;
+
+        if (time < $expiry) {
+            usleep 10000;
         }
         else {
-            usleep 10000;
+            last;
         }
     }
 }
@@ -430,39 +432,50 @@ sub native_drag_and_drop_to_object {
     my ($self, $source, $target) = @_;
 
     $source = $self->resolve_locator($source);
+
+    my ($source_x, $source_y) = $self->get_screen_position($source);
+    $source_x += $source->get_offset_width / 2;
+    $source_y += $source->get_offset_height / 2;
+
     $target = $self->resolve_locator($target);
 
-    my $source_x = int($source->get_offset_left + $source->get_offset_width  / 2);
-    my $source_y = int($source->get_offset_top  + $source->get_offset_height / 2);
-
-    my $target_x = int($target->get_offset_left + $target->get_offset_width  / 2);
-    my $target_y = int($target->get_offset_top  + $target->get_offset_height / 2);
+    my ($target_x, $target_y) = $self->get_screen_position($target);
+    $target_x += $target->get_offset_width / 2;
+    $target_y += $target->get_offset_height / 2;
 
     my $display = X11::Xlib->new;
     $display->XTestFakeMotionEvent(0, $source_x, $source_y, 0);
     $display->XFlush;
-    usleep 10; # Time for DnD to kick in
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $self->pause(10); # Time for DnD to kick in
     $display->XTestFakeButtonEvent(1, 1, 0);
     $display->XFlush;
-    usleep 10; # Time for DnD to kick in
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $self->pause(10);
     $display->XTestFakeMotionEvent(0, $source_x, $source_y - 1, 0);
     $display->XFlush;
-    usleep 10; # Time for DnD to kick in
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $self->pause(10);
     $display->XTestFakeMotionEvent(0, $target_x, $target_y + 1, 0);
     $display->XFlush;
-    usleep 10; # Time for DnD to kick in
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $self->pause(10);
     $display->XTestFakeMotionEvent(0, $target_x, $target_y, 0);
     $display->XFlush;
-    usleep 10; # Time for DnD to kick in
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $self->pause(10);
     $display->XTestFakeButtonEvent(1, 0, 0);
     $display->XFlush;
-    usleep 10; # Time for DnD to kick in
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    $self->pause(10);
+}
+
+sub get_screen_position {
+    my ($self, $element) = @_;
+
+    my $x = 0;
+    my $y = 0;
+
+    do {
+        $x += $element->get_offset_left;
+        $y += $element->get_offset_top;
+    } while ($element = $element->get_offset_parent);
+
+    return ($x, $y);
 }
 
 1;
