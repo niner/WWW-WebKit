@@ -83,12 +83,13 @@ sub wait_for_page_to_load_ok {
 }
 
 sub wait_for_element_present_ok {
-    my ($self, $locator, $timeout) = @_;
+    my ($self, $locator, $timeout, $description) = @_;
+    $description //= '';
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     $timeout ||= $self->default_timeout;
 
-    ok($self->wait_for_element_present($locator, $timeout), "wait_for_element_present_ok($locator, $timeout)");
+    ok($self->wait_for_element_present($locator, $timeout), "wait_for_element_present_ok($locator, $timeout, $description)");
 }
 
 sub is_element_present_ok {
