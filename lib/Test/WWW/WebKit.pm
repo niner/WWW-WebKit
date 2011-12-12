@@ -115,6 +115,22 @@ sub type_keys_ok {
     ok(eval { $self->type_keys($locator, $text) }, "type_keys_ok($locator, $text)");
 }
 
+sub control_key_down_ok {
+    my ($self) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    $self->control_key_down;
+    ok(1, "control_key_down_ok()");
+}
+
+sub control_key_up_ok {
+    my ($self) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    $self->control_key_up;
+    ok(1, "control_key_up_ok()");
+}
+
 sub is_ordered_ok {
     my ($self, $first, $second) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;

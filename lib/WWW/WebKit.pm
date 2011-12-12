@@ -112,6 +112,12 @@ has xvfb_server => (
     is => 'rw',
 );
 
+has modifiers => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    default => sub { {control => 0} },
+);
+
 sub init {
     my ($self) = @_;
 
@@ -381,6 +387,18 @@ sub type_keys {
     return 1;
 }
 
+sub control_key_down {
+    my ($self) = @_;
+
+    $self->modifiers->{control} = 1;
+}
+
+sub control_key_up {
+    my ($self) = @_;
+
+    $self->modifiers->{control} = 0;
+}
+
 sub pause {
     my ($self, $time) = @_;
 
@@ -429,7 +447,7 @@ sub mouse_down {
     my $target = $self->resolve_locator($locator, $document) or return;
 
     my $click = $document->create_event('MouseEvent');
-    $click->init_mouse_event('mousedown', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
+    $click->init_mouse_event('mousedown', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, $self->modifiers->{control} ? TRUE : FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($click);
     return 1;
 }
