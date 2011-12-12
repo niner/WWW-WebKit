@@ -458,7 +458,7 @@ sub get_value {
 
 sub get_attribute {
     my ($self, $locator) = @_;
-    ($locator, my $attr) = $locator =~ /\A (.*) @ (.*?) \z/xm;
+    ($locator, my $attr) = $locator =~ m!\A (.*?) /?@ ([^@]*) \z!xm;
 
     return $self->resolve_locator($locator)->get_attribute($attr);
 }
