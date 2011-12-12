@@ -469,9 +469,15 @@ sub get_value {
     my ($self, $locator) = @_;
 
     my $element = $self->resolve_locator($locator);
-    my $value = $element->get_value;
-    $value =~ s/\A \s+ | \s+ \z//gxm;
-    return $value;
+
+    if (lc $element->get_node_name eq 'input' and $element->get_property('type') ~~ [qw(checkbox radio)]) {
+        return $element->get_checked ? 'on' : 'off';
+    }
+    else {
+        my $value = $element->get_value;
+        $value =~ s/\A \s+ | \s+ \z//gxm;
+        return $value;
+    }
 }
 
 sub get_attribute {
