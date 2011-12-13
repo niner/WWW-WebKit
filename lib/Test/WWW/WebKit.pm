@@ -160,10 +160,11 @@ sub fire_event_ok {
 }
 
 sub text_is {
-    my ($self, $locator, $text) = @_;
+    my ($self, $locator, $text, $description) = @_;
+    $description //= '';
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    is($self->get_text($locator), $text);
+    is($self->get_text($locator), $text, "text_is($locator, $text, $description)");
 }
 
 sub text_like {
