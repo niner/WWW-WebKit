@@ -1,4 +1,4 @@
-WWW-Webkit-XSHelper version 0.01
+WWW-Webkit version 0.01
 ================================
 
 The README is used to introduce the module and provide instructions on
@@ -25,7 +25,13 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-  blah blah blah
+  Gtk3
+  Gtk3::WebKit
+  Glib::Object::Introspection
+  X11::Xlib
+
+On openSUSE, the following packages have to be installed:
+  gobject-introspection-devel gtk3-devel libwebkitgtk3-devel perl-Glib
 
 COPYRIGHT AND LICENCE
 
