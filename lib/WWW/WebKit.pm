@@ -155,12 +155,18 @@ sub init {
 sub setup_xvfb {
     my ($self) = @_;
 
+    open my $stderr, '>&', \*STDERR or die "Can't dup STDERR: $!";
+    close STDERR;
+
     my ($server, $display);
     while (1) {
         $display = 1 + int(rand(98));
 
-        last if $self->xvfb_pid(open $server, '|-', "Xvfb :$display -screen 0 1600x1200x24 2>/dev/null");
+        last if $self->xvfb_pid(open $server, '|-', "Xvfb :$display -screen 0 1600x1200x24");
     }
+
+    open STDERR, '>&', $stderr;
+
     sleep 1;
     $self->xvfb_server($server);
     $ENV{DISPLAY} = ":$display";
