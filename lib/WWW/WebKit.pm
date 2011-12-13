@@ -307,7 +307,8 @@ sub click {
     my $target = $self->resolve_locator($locator, $document) or return;
 
     my $click = $document->create_event('MouseEvent');
-    $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
+    my ($x, $y) = $self->get_center_screen_position($target);
+    $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, $x, $y, $x, $y, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($click);
     return 1;
 }
@@ -551,36 +552,37 @@ sub native_drag_and_drop_to_object {
     my ($self, $source, $target) = @_;
 
     $source = $self->resolve_locator($source);
-
-    my ($source_x, $source_y) = $self->get_screen_position($source);
-    $source_x += $source->get_offset_width / 2;
-    $source_y += $source->get_offset_height / 2;
+    my ($source_x, $source_y) = $self->get_center_screen_position($source);
 
     $target = $self->resolve_locator($target);
-
-    my ($target_x, $target_y) = $self->get_screen_position($target);
-    $target_x += $target->get_offset_width / 2;
-    $target_y += $target->get_offset_height / 2;
+    my ($target_x, $target_y) = $self->get_center_screen_position($target);
 
     my $display = X11::Xlib->new;
-    $display->XTestFakeMotionEvent(0, $source_x, $source_y, 0);
+    $display->XTestFakeMotionEvent(0, $source_x, $source_y, 5);
     $display->XFlush;
-    $self->pause(10); # Time for DnD to kick in
+    $self->pause(50); # Time for DnD to kick in
     $display->XTestFakeButtonEvent(1, 1, 0);
     $display->XFlush;
-    $self->pause(10);
-    $display->XTestFakeMotionEvent(0, $source_x, $source_y - 1, 0);
+    $self->pause(50);
+    $display->XTestFakeMotionEvent(0, $source_x, $source_y - 1, 5);
     $display->XFlush;
-    $self->pause(10);
-    $display->XTestFakeMotionEvent(0, $target_x, $target_y + 1, 0);
+    $self->pause(50);
+    $display->XTestFakeMotionEvent(0, $target_x, $target_y + 1, 5);
     $display->XFlush;
-    $self->pause(10);
-    $display->XTestFakeMotionEvent(0, $target_x, $target_y, 0);
+    $self->pause(50);
+    $display->XTestFakeMotionEvent(0, $target_x, $target_y, 5);
     $display->XFlush;
-    $self->pause(10);
-    $display->XTestFakeButtonEvent(1, 0, 0);
+    $self->pause(50);
+    $display->XTestFakeButtonEvent(1, 0, 5);
     $display->XFlush;
-    $self->pause(10);
+    # Mouse cursor jumps to 0,0 for no apparrent reason. Move it back to the target
+    $self->pause(50);
+    $display->XTestFakeMotionEvent(0, $target_x, $target_y + 1, 5);
+    $display->XFlush;
+    $self->pause(50);
+    $display->XTestFakeMotionEvent(0, $target_x, $target_y, 5);
+    $display->XFlush;
+    $self->pause(50);
 }
 
 sub get_screen_position {
@@ -593,6 +595,16 @@ sub get_screen_position {
         $x += $element->get_offset_left;
         $y += $element->get_offset_top;
     } while ($element = $element->get_offset_parent);
+
+    return ($x, $y);
+}
+
+sub get_center_screen_position {
+    my ($self, $element) = @_;
+
+    my ($x, $y) = $self->get_screen_position($element);
+    $x += $element->get_offset_width / 2;
+    $y += $element->get_offset_height / 2;
 
     return ($x, $y);
 }
