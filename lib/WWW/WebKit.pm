@@ -353,7 +353,8 @@ sub is_element_present {
 sub get_text {
     my ($self, $locator) = @_;
 
-    my $value = $self->resolve_locator($locator)->get_text_content;
+    my $element = $self->resolve_locator($locator) or croak "Element not found in get_text($locator)";
+    my $value = $element->get_text_content;
     $value =~ s/\A \s+ | \s+ \z//gxm;
     $value =~ s/\s+/ /gxms; # squeeze white space
     return $value;
