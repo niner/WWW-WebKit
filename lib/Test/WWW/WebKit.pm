@@ -174,6 +174,13 @@ sub text_like {
     like($self->get_text($locator), $text);
 }
 
+sub body_text_like {
+    my ($self, $text) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    like($self->get_body_text(), $text, "body_text_like($text)");
+}
+
 sub value_is {
     my ($self, $locator, $value) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
