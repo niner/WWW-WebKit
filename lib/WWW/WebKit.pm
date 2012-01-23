@@ -179,6 +179,12 @@ sub DESTROY {
     kill 15, $self->xvfb_pid;
 }
 
+sub set_timeout {
+    my ($self, $timeout) = @_;
+
+    $self->default_timeout($timeout);
+}
+
 sub open {
     my ($self, $url) = @_;
 
