@@ -538,7 +538,9 @@ sub submit {
 sub get_html_source {
     my ($self) = @_;
 
-    return $self->view->get_main_frame->get_data_source->get_data->{str};
+    my $data = $self->view->get_main_frame->get_data_source->get_data;
+    return $data->{str} if ref $data;
+    return $data;
 }
 
 sub get_confirmation {
