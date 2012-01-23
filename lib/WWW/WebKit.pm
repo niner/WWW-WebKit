@@ -434,6 +434,12 @@ sub get_body_text {
     return $self->get_text('xpath=//body');
 }
 
+sub get_title {
+    my ($self) = @_;
+
+    return $self->get_text('xpath=//title');
+}
+
 sub mouse_over {
     my ($self, $locator) = @_;
 

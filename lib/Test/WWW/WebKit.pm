@@ -188,6 +188,12 @@ sub value_is {
     is($self->get_value($locator), $value, "value_is($locator, $value)");
 }
 
+sub title_like {
+    my ($self, $text) = @_;
+
+    like($self->get_title, $text, "title_like($text)");
+}
+
 sub is_visible_ok {
     my ($self, $locator) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
