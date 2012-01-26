@@ -55,6 +55,16 @@ after DESTROY => sub {
     close $self->server;
 };
 
+sub test_port {
+    my ($port) = @_;
+    return IO::Socket::INET->new(
+        Listen    => 5,
+        Proto     => 'tcp',
+        Reuse     => 1,
+        LocalPort => $port
+    ) ? 1 : 0;
+}
+
 sub start_catalyst_server {
     my ($self) = @_;
 
@@ -74,6 +84,7 @@ sub start_catalyst_server {
         my ($port, $catalyst);
         while (1) {
             $port = 1024 + int(rand(65535 - 1024));
+            next unless test_port($port);
 
             my $loader = Catalyst::EngineLoader->new(application_name => $self->app);
             eval {
@@ -81,6 +92,7 @@ sub start_catalyst_server {
             };
             warn $@ if $@;
             last unless $@;
+            warn "retrying...";
         }
         say $port;
         $self->app->run($port, 'localhost', $catalyst);
