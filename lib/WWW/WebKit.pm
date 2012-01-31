@@ -344,6 +344,23 @@ sub wait_for_element_present {
     return $element;
 }
 
+sub wait_for_element_to_disappear {
+    my ($self, $locator, $timeout) = @_;
+    $timeout ||= $self->default_timeout;
+
+    my $element;
+    my $expiry = time + $timeout / 1000;
+
+    while ($element = $self->is_element_present($locator)) {
+        Gtk3->main_iteration while Gtk3->events_pending;
+
+        return 0 if time > $expiry;
+        usleep 10000;
+    }
+
+    return 1;
+}
+
 sub is_element_present {
     my ($self, $locator) = @_;
 
