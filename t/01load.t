@@ -40,4 +40,15 @@ is($sel->is_visible('id=invisible_child'), 0, 'child invisible');
 is($sel->is_visible('id=void'), 0, 'display none');
 is($sel->is_visible('id=void_child'), 0, 'child display none');
 
+$sel->open("$Bin/test/key_press.html");
+$sel->key_press('css=body', '\027');
+$sel->pause(200);
+is(pop @{ $sel->alerts }, 27);
+$sel->key_press('css=body', '\013');
+$sel->pause(200);
+is(pop @{ $sel->alerts }, 13);
+$sel->key_press('css=body', 'a');
+$sel->pause(200);
+is(pop @{ $sel->alerts }, 65);
+
 done_testing;

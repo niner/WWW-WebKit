@@ -385,11 +385,16 @@ sub type {
     return 1;
 }
 
+my %keycodes = (
+    '\013' => 36,
+    '\027' => 9,
+);
+
 sub key_press {
     my ($self, $locator, $key, $elem) = @_;
     my $display = X11::Xlib->new;
 
-    my $keycode = $key eq '\013' ? 36 : $display->XKeysymToKeycode(X11::Xlib::XStringToKeysym($key));
+    my $keycode = exists $keycodes{$key} ? $keycodes{$key} : $display->XKeysymToKeycode(X11::Xlib::XStringToKeysym($key));
 
     $elem ||= $self->resolve_locator($locator) or return;
     $elem->focus;
