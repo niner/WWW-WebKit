@@ -36,6 +36,8 @@ use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use Test::More;
 
+our $VERSION = '0.01';
+
 sub open_ok {
     my ($self, $url) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
