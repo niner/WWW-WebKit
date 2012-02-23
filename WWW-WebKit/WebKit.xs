@@ -8,7 +8,7 @@
 #include <gperl.h>
 
 
-MODULE = WWW::WebKit::XSHelper		PACKAGE = WWW::WebKit::XSHelper
+MODULE = WWW::WebKit		PACKAGE = WWW::WebKit::XSHelper
 
 void
 set_int_return_value(return_value, value)

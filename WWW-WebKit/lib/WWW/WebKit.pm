@@ -36,12 +36,14 @@ use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use X11::Xlib;
 use Carp qw(carp croak);
-use WWW::WebKit::XSHelper;
+use XSLoader;
 
 our $VERSION = '0.01';
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
+
+XSLoader::load;
 
 has xvfb => (
     is  => 'ro',
