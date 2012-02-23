@@ -2,7 +2,7 @@ package Test::WWW::WebKit::Catalyst;
 
 =head1 NAME
 
-Test::WWW::WebKit - Perl extension for using an embedding WebKit engine for tests
+Test::WWW::WebKit::Catalyst - Perl extension for using an embedding WebKit engine for Catalyst tests
 
 =head1 SYNOPSIS
 
@@ -29,8 +29,12 @@ None by default.
 
 use 5.10.0;
 use Moose;
+use IO::Socket::INET;
+use Catalyst::EngineLoader;
 
 extends 'Test::WWW::WebKit';
+
+our $VERSION = '0.01';
 
 has app => (
     is       => 'ro',
