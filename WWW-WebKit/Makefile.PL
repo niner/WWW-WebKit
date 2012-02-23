@@ -1,4 +1,4 @@
-use 5.012003;
+use 5.010000;
 use ExtUtils::MakeMaker;
 use ExtUtils::PkgConfig;
 use Glib::MakeHelper;
