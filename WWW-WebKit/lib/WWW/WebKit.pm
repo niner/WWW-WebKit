@@ -160,6 +160,11 @@ sub setup_xvfb {
     open my $stderr, '>&', \*STDERR or die "Can't dup STDERR: $!";
     close STDERR;
 
+    if (system('Xvfb -help') != 0) {
+        open STDERR, '>&', $stderr;
+        die 'Could not start Xvfb';
+    }
+
     my ($server, $display);
     while (1) {
         $display = 1 + int(rand(98));
