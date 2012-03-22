@@ -61,4 +61,8 @@ $sel->key_press('css=body', 'a');
 $sel->pause(200);
 is(pop @{ $sel->alerts }, 65);
 
+$sel->open("$Bin/test/eval.html");
+is($sel->eval_js('return "foo"'), 'foo');
+is($sel->eval_js('return document.getElementById("foo").firstChild.data'), 'bar');
+
 done_testing;
