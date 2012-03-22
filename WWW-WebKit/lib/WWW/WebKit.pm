@@ -43,7 +43,7 @@ our $VERSION = '0.01';
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
 
-XSLoader::load;
+XSLoader::load(__PACKAGE__, $VERSION);
 
 has xvfb => (
     is  => 'ro',
