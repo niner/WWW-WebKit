@@ -1,6 +1,7 @@
 use common::sense;
 use Test::More;
 use FindBin qw($Bin);
+use URI;
 
 BEGIN {
     use_ok 'WWW::WebKit';
@@ -64,5 +65,11 @@ is(pop @{ $sel->alerts }, 65);
 $sel->open("$Bin/test/eval.html");
 is($sel->eval_js('"foo"'), 'foo');
 is($sel->eval_js('document.getElementById("foo").firstChild.data'), 'bar');
+
+$sel->open("$Bin/test/type.html");
+$sel->type('id=foo', 'bar');
+$sel->click('id=submit');
+$sel->wait_for_page_to_load;
+is(URI->new($sel->view->get_uri)->query, 'foo=bar');
 
 done_testing;
