@@ -62,7 +62,7 @@ $sel->pause(200);
 is(pop @{ $sel->alerts }, 65);
 
 $sel->open("$Bin/test/eval.html");
-is($sel->eval_js('return "foo"'), 'foo');
-is($sel->eval_js('return document.getElementById("foo").firstChild.data'), 'bar');
+is($sel->eval_js('"foo"'), 'foo');
+is($sel->eval_js('document.getElementById("foo").firstChild.data'), 'bar');
 
 done_testing;

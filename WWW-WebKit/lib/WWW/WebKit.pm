@@ -217,8 +217,8 @@ sub go_back {
 sub eval_js {
     my ($self, $js) = @_;
 
-    my $fn = "___run_js_$$";
-    $self->view->execute_script("function $fn() { $js }; alert($fn());");
+    $js =~ s/'/\\'/g;
+    $self->view->execute_script("alert(eval('$js'));");
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
     return pop @{ $self->alerts };
 }
