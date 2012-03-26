@@ -234,6 +234,26 @@ sub submit_ok {
     ok($self->submit($locator), "submit_ok($locator)");
 }
 
+sub eval_is {
+    my ($self, $js, $expr) = @_;
+
+    is($self->eval_js($js), $expr, "eval_is($expr)");
+}
+
+sub check_ok {
+    my ($self, $locator) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->check($locator), "check_ok($locator)");
+}
+
+sub uncheck_ok {
+    my ($self, $locator) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->uncheck($locator), "uncheck_ok($locator)");
+}
+
 =head2 Additions to the Selenium API
 
 =head3 native_drag_and_drop_to_object_ok($source, $target)

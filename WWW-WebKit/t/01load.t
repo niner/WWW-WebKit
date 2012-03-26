@@ -51,6 +51,16 @@ is($sel->is_visible('id=invisible_child'), 0, 'child invisible');
 is($sel->is_visible('id=void'), 0, 'display none');
 is($sel->is_visible('id=void_child'), 0, 'child display none');
 
+ok($sel->is_element_present('link=linktext'));
+ok($sel->is_element_present('link=inner_linktext'));
+is($sel->select('name=select', 'index=1'), 1);
+
+is($sel->check('name=checkbox'), 1);
+is($sel->get_attribute('name=checkbox@checked'), 'checked');
+
+is($sel->uncheck('name=checkbox'), 1);
+ok(not $sel->get_attribute('name=checkbox@checked'));
+
 $sel->open("$Bin/test/key_press.html");
 $sel->key_press('css=body', '\027');
 $sel->pause(200);
