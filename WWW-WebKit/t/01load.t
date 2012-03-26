@@ -78,4 +78,8 @@ is(pop @{ $sel->alerts }, 'onchange fired');
 $sel->select('id=test_event', 'value=1');
 is(pop @{ $sel->alerts }, 'change event fired');
 
+$sel->open("$Bin/test/utf8.html");
+is($sel->resolve_locator('xpath=//*[text() = "föö"]')->get_id, 'test');
+ok($sel->is_element_present('xpath=//*[text() = "föö"]'));
+
 done_testing;
