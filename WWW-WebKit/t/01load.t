@@ -72,4 +72,10 @@ $sel->click('id=submit');
 $sel->wait_for_page_to_load;
 is(URI->new($sel->view->get_uri)->query, 'foo=bar');
 
+$sel->open("$Bin/test/select.html");
+$sel->select('id=test', 'value=1');
+is(pop @{ $sel->alerts }, 'onchange fired');
+$sel->select('id=test_event', 'value=1');
+is(pop @{ $sel->alerts }, 'change event fired');
+
 done_testing;
