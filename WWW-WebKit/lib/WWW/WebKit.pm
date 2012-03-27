@@ -336,7 +336,7 @@ sub check {
     my ($self, $locator) = @_;
 
     my $element = $self->resolve_locator($locator);
-    return $self->change_check($element, 'checked');
+    return $self->change_check($element, 1);
 
     return;
 }
@@ -345,16 +345,22 @@ sub uncheck {
     my ($self, $locator) = @_;
 
     my $element = $self->resolve_locator($locator);
-    return $self->change_check($element, '');
+    return $self->change_check($element, undef);
 
     return;
 }
 
 sub change_check {
-    my ($self, $element, $state) = @_;
+    my ($self, $element, $set_checked) = @_;
 
     my $document = $self->view->get_dom_document;
-    $element->set_attribute('checked', $state);
+
+    unless ($set_checked) {
+        $element->remove_attribute('checked');
+    }
+    else {
+        $element->set_attribute('checked', 'checked');
+    }
 
     my $changed = $document->create_event('Event');
     $changed->init_event('change', TRUE, TRUE);
