@@ -217,8 +217,8 @@ sub go_back {
 sub eval_js {
     my ($self, $js) = @_;
 
-    my $fn = "___run_js_$$";
-    $self->view->execute_script("function $fn() { $js }; alert($fn());");
+    $js =~ s/'/\\'/g;
+    $self->view->execute_script("alert(eval('$js'));");
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
     return pop @{ $self->alerts };
 }
@@ -251,8 +251,14 @@ sub resolve_locator {
     if (my ($label) = $locator =~ /^label=(.*)/) {
         return $self->resolve_locator($label eq '' ? qq{xpath=.//*[not(text())]} : qq{xpath=.//*[text()="$label"]}, $document, $context);
     }
+    elsif (my ($link) = $locator =~ /^link=(.*)/) {
+        return $self->resolve_locator($link eq '' ? qq{xpath=.//a[not(descendant-or-self::text())]} : qq{xpath=.//a[descendant-or-self::text()="$link"]}, $document, $context);
+    }
     elsif (my ($value) = $locator =~ /^value=(.*)/) {
         return $self->resolve_locator(qq{xpath=.//*[\@value="$value"]}, $document, $context);
+    }
+    elsif (my ($index) = $locator =~ /^index=(.*)/) {
+        return $self->resolve_locator(qq{xpath=.//option[position()="$index"]}, $document, $context);
     }
     elsif (my ($id) = $locator =~ /^id=(.*)/) {
         return $document->get_element_by_id($id);
@@ -323,6 +329,44 @@ sub click {
     my ($x, $y) = $self->get_center_screen_position($target);
     $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, $x, $y, $x, $y, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($click);
+    return 1;
+}
+
+sub check {
+    my ($self, $locator) = @_;
+
+    my $element = $self->resolve_locator($locator);
+    return $self->change_check($element, 1);
+
+    return;
+}
+
+sub uncheck {
+    my ($self, $locator) = @_;
+
+    my $element = $self->resolve_locator($locator);
+    return $self->change_check($element, undef);
+
+    return;
+}
+
+sub change_check {
+    my ($self, $element, $set_checked) = @_;
+
+    my $document = $self->view->get_dom_document;
+
+    unless ($set_checked) {
+        $element->remove_attribute('checked');
+    }
+    else {
+        $element->set_attribute('checked', 'checked');
+    }
+
+    my $changed = $document->create_event('Event');
+    $changed->init_event('change', TRUE, TRUE);
+    $element->dispatch_event($changed);
+
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
     return 1;
 }
 

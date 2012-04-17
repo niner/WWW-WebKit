@@ -1,6 +1,7 @@
 use common::sense;
 use Test::More;
 use FindBin qw($Bin);
+use URI;
 
 BEGIN {
     use_ok 'WWW::WebKit';
@@ -50,6 +51,16 @@ is($sel->is_visible('id=invisible_child'), 0, 'child invisible');
 is($sel->is_visible('id=void'), 0, 'display none');
 is($sel->is_visible('id=void_child'), 0, 'child display none');
 
+ok($sel->is_element_present('link=linktext'));
+ok($sel->is_element_present('link=inner_linktext'));
+is($sel->select('name=select', 'index=1'), 1);
+
+is($sel->check('name=checkbox'), 1);
+is($sel->get_attribute('name=checkbox@checked'), 'checked');
+
+is($sel->uncheck('name=checkbox'), 1);
+ok(not $sel->get_attribute('name=checkbox@checked'));
+
 $sel->open("$Bin/test/key_press.html");
 $sel->key_press('css=body', '\027');
 $sel->pause(200);
@@ -64,5 +75,25 @@ is(pop @{ $sel->alerts }, 65);
 $sel->open("$Bin/test/ordered.html");
 ok($sel->is_ordered('id=first', 'id=second'), 'is_ordered is correct for ordered elements');
 ok((not $sel->is_ordered('id=second', 'id=first')), 'is_ordered detects wrong order correctly');
+
+$sel->open("$Bin/test/eval.html");
+is($sel->eval_js('"foo"'), 'foo');
+is($sel->eval_js('document.getElementById("foo").firstChild.data'), 'bar');
+
+$sel->open("$Bin/test/type.html");
+$sel->type('id=foo', 'bar');
+$sel->click('id=submit');
+$sel->wait_for_page_to_load;
+is(URI->new($sel->view->get_uri)->query, 'foo=bar');
+
+$sel->open("$Bin/test/select.html");
+$sel->select('id=test', 'value=1');
+is(pop @{ $sel->alerts }, 'onchange fired');
+$sel->select('id=test_event', 'value=1');
+is(pop @{ $sel->alerts }, 'change event fired');
+
+$sel->open("$Bin/test/utf8.html");
+is($sel->resolve_locator('xpath=//*[text() = "föö"]')->get_id, 'test');
+ok($sel->is_element_present('xpath=//*[text() = "föö"]'));
 
 done_testing;
