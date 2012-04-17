@@ -461,7 +461,7 @@ sub pause {
 
 sub is_ordered {
     my ($self, $first, $second) = @_;
-    return 1;
+    return $self->resolve_locator($first)->compare_document_position($self->resolve_locator($second)) == 4;
 }
 
 sub get_body_text {

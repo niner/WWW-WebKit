@@ -61,4 +61,8 @@ $sel->key_press('css=body', 'a');
 $sel->pause(200);
 is(pop @{ $sel->alerts }, 65);
 
+$sel->open("$Bin/test/ordered.html");
+ok($sel->is_ordered('id=first', 'id=second'), 'is_ordered is correct for ordered elements');
+ok((not $sel->is_ordered('id=second', 'id=first')), 'is_ordered detects wrong order correctly');
+
 done_testing;
