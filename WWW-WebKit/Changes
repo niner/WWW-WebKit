@@ -1,0 +1,11 @@
+0.02 2012-04-17 10:00:00 CEST
+    * Do not fail tests if Xvfb is not available
+    * Be compatible with XSLoader < 0.14
+    * Implemented check, uncheck, eval_is and is_ordered
+    * Added some tests
+    * Added documentation about implemented methods
+
+0.01 2012-02-23 17:00:00 CET
+    * first public version
+
+# vim: expandtab shiftwidth=4 sts=4:
