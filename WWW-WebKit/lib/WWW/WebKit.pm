@@ -120,6 +120,12 @@ has modifiers => (
     default => sub { {control => 0} },
 );
 
+=head3 init
+
+Initializes Webkit and GTK3. Must be called before any of the other methods.
+
+=cut
+
 sub init {
     my ($self) = @_;
 
@@ -186,11 +192,25 @@ sub DESTROY {
     kill 15, $self->xvfb_pid;
 }
 
+=head2 Implemented methods of the Selenium API
+
+Please see L<WWW::Selenium> for the full documentation of these methods.
+
+=head3 set_timeout($timeout)
+
+Set the default timeout to $timeout.
+
+=cut
+
 sub set_timeout {
     my ($self, $timeout) = @_;
 
     $self->default_timeout($timeout);
 }
+
+=head3 open($url)
+
+=cut
 
 sub open {
     my ($self, $url) = @_;
@@ -200,12 +220,20 @@ sub open {
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
+=head3 refresh()
+
+=cut
+
 sub refresh {
     my ($self) = @_;
 
     $self->view->reload;
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
+
+=head3 go_back()
+
+=cut
 
 sub go_back {
     my ($self) = @_;
@@ -284,6 +312,10 @@ sub resolve_locator {
     die "unknown locator $locator";
 }
 
+=head3 get_xpath_count
+
+=cut
+
 sub get_xpath_count {
     my ($self, $xpath) = @_;
 
@@ -292,6 +324,10 @@ sub get_xpath_count {
     my $xpath_results = $document->evaluate($xpath, $document, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
     return $xpath_results->get_snapshot_length;
 }
+
+=head3 select($select, $option)
+
+=cut
 
 sub select {
     my ($self, $select, $option) = @_;
@@ -319,6 +355,10 @@ sub select {
     return;
 }
 
+=head3 click($locator)
+
+=cut
+
 sub click {
     my ($self, $locator) = @_;
 
@@ -332,6 +372,10 @@ sub click {
     return 1;
 }
 
+=head3 check($locator)
+
+=cut
+
 sub check {
     my ($self, $locator) = @_;
 
@@ -340,6 +384,10 @@ sub check {
 
     return;
 }
+
+=head3 uncheck($locator)
+
+=cut
 
 sub uncheck {
     my ($self, $locator) = @_;
@@ -370,12 +418,21 @@ sub change_check {
     return 1;
 }
 
+=head3 wait_for_page_to_load($timeout)
+
+=cut
+
 sub wait_for_page_to_load {
     my ($self, $timeout) = @_;
 
+    #TODO implement timeout
     $self->pause(300);
     Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
+
+=head3 wait_for_element_present($locator, $timeout)
+
+=cut
 
 sub wait_for_element_present {
     my ($self, $locator, $timeout) = @_;
@@ -395,28 +452,19 @@ sub wait_for_element_present {
     return $element;
 }
 
-sub wait_for_element_to_disappear {
-    my ($self, $locator, $timeout) = @_;
-    $timeout ||= $self->default_timeout;
+=head3 is_element_present($locator)
 
-    my $element;
-    my $expiry = time + $timeout / 1000;
-
-    while ($element = $self->is_element_present($locator)) {
-        Gtk3->main_iteration while Gtk3->events_pending;
-
-        return 0 if time > $expiry;
-        usleep 10000;
-    }
-
-    return 1;
-}
+=cut
 
 sub is_element_present {
     my ($self, $locator) = @_;
 
     return eval { $self->resolve_locator($locator) };
 }
+
+=head3 get_text($locator)
+
+=cut
 
 sub get_text {
     my ($self, $locator) = @_;
@@ -427,6 +475,10 @@ sub get_text {
     $value =~ s/\s+/ /gxms; # squeeze white space
     return $value;
 }
+
+=head3 type($locator, $text)
+
+=cut
 
 sub type {
     my ($self, $locator, $text) = @_;
@@ -462,6 +514,10 @@ sub key_press {
     return 1;
 }
 
+=head3 type_keys($locator, $string)
+
+=cut
+
 sub type_keys {
     my ($self, $locator, $string) = @_;
 
@@ -486,6 +542,10 @@ sub control_key_up {
     $self->modifiers->{control} = 0;
 }
 
+=head3 pause($time)
+
+=cut
+
 sub pause {
     my ($self, $time) = @_;
 
@@ -503,10 +563,18 @@ sub pause {
     }
 }
 
+=head3 is_ordered($first, $second)
+
+=cut
+
 sub is_ordered {
     my ($self, $first, $second) = @_;
     return $self->resolve_locator($first)->compare_document_position($self->resolve_locator($second)) == 4;
 }
+
+=head3 get_body_text()
+
+=cut
 
 sub get_body_text {
     my ($self) = @_;
@@ -514,11 +582,19 @@ sub get_body_text {
     return $self->get_text('xpath=//body');
 }
 
+=head3 get_title()
+
+=cut
+
 sub get_title {
     my ($self) = @_;
 
     return $self->get_text('xpath=//title');
 }
+
+=head3 mouse_over($locator)
+
+=cut
 
 sub mouse_over {
     my ($self, $locator) = @_;
@@ -533,6 +609,10 @@ sub mouse_over {
     return 1;
 }
 
+=head3 mouse_down($locator)
+
+=cut
+
 sub mouse_down {
     my ($self, $locator) = @_;
 
@@ -544,6 +624,10 @@ sub mouse_down {
     $target->dispatch_event($click);
     return 1;
 }
+
+=head3 fire_event($locator, $event_type)
+
+=cut
 
 sub fire_event {
     my ($self, $locator, $event_type) = @_;
@@ -557,6 +641,10 @@ sub fire_event {
 
     return 1;
 }
+
+=head3 get_value($locator)
+
+=cut
 
 sub get_value {
     my ($self, $locator) = @_;
@@ -573,12 +661,20 @@ sub get_value {
     }
 }
 
+=head3 get_attribute($locator)
+
+=cut
+
 sub get_attribute {
     my ($self, $locator) = @_;
     ($locator, my $attr) = $locator =~ m!\A (.*?) /?@ ([^@]*) \z!xm;
 
     return $self->resolve_locator($locator)->get_attribute($attr);
 }
+
+=head3 is_visible($locator)
+
+=cut
 
 sub is_visible {
     my ($self, $locator) = @_;
@@ -599,6 +695,10 @@ sub is_visible {
     return $visible;
 }
 
+=head3 submit($locator)
+
+=cut
+
 sub submit {
     my ($self, $locator) = @_;
 
@@ -608,6 +708,10 @@ sub submit {
     return 1;
 }
 
+=head3 get_html_source()
+
+=cut
+
 sub get_html_source {
     my ($self) = @_;
 
@@ -616,11 +720,19 @@ sub get_html_source {
     return $data;
 }
 
+=head3 get_confirmation()
+
+=cut
+
 sub get_confirmation {
     my ($self) = @_;
 
     return pop @{ $self->confirmations };
 }
+
+=head3 answer_on_next_prompt($answer)
+
+=cut
 
 sub answer_on_next_prompt {
     my ($self, $answer) = @_;
@@ -629,6 +741,29 @@ sub answer_on_next_prompt {
 }
 
 =head2 Additions to the Selenium API
+
+=head3 wait_for_element_to_disappear($locator, $timeout)
+
+Works just like wait_for_element_present but instead of waiting for the element to appear, it waits for the element to disappear.
+
+=cut
+
+sub wait_for_element_to_disappear {
+    my ($self, $locator, $timeout) = @_;
+    $timeout ||= $self->default_timeout;
+
+    my $element;
+    my $expiry = time + $timeout / 1000;
+
+    while ($element = $self->is_element_present($locator)) {
+        Gtk3->main_iteration while Gtk3->events_pending;
+
+        return 0 if time > $expiry;
+        usleep 10000;
+    }
+
+    return 1;
+}
 
 =head3 native_drag_and_drop_to_object($source, $target)
 
@@ -702,8 +837,8 @@ sub get_center_screen_position {
 =head1 SEE ALSO
 
 See L<WWW::Selenium> for API documentation.
-L<Test::WWW::WebKit> for a replacement for L<Test::WWW::Selenium>
-L<Test::WWW::WebKit::Catalyst> for a replacement for L<Test::WWW::Selenium::Catalyst>
+See L<Test::WWW::WebKit> for a replacement for L<Test::WWW::Selenium>.
+See L<Test::WWW::WebKit::Catalyst> for a replacement for L<Test::WWW::Selenium::Catalyst>.
 
 =head1 AUTHOR
 
