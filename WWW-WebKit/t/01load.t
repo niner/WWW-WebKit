@@ -63,13 +63,13 @@ ok(not $sel->get_attribute('name=checkbox@checked'));
 
 $sel->open("$Bin/test/key_press.html");
 $sel->key_press('css=body', '\027');
-$sel->pause(200);
+$sel->wait_for_alert;
 is(pop @{ $sel->alerts }, 27);
 $sel->key_press('css=body', '\013');
-$sel->pause(200);
+$sel->wait_for_alert('13');
 is(pop @{ $sel->alerts }, 13);
 $sel->key_press('css=body', 'a');
-$sel->pause(200);
+$sel->wait_for_alert('65');
 is(pop @{ $sel->alerts }, 65);
 
 $sel->open("$Bin/test/ordered.html");
