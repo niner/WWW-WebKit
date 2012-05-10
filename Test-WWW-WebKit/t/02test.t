@@ -16,4 +16,8 @@ $sel->refresh_ok;
 $sel->attribute_like('id=test@class', qr/foo/);
 $sel->attribute_unlike('id=test@class', qr/qux/);
 
+$sel->open("$Bin/test/key_press.html");
+$sel->key_press('css=body', '\027');
+$sel->wait_for_alert_ok('27');
+
 done_testing;
