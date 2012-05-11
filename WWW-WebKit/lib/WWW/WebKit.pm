@@ -765,6 +765,33 @@ sub wait_for_element_to_disappear {
     return 1;
 }
 
+=head3 wait_for_alert($text, $timeout)
+
+Wait for an alert with the given text to happen.
+If $text is undef, it waits for any alert. Since alerts do not get automatically cleared, this has to be done manually before causing the action that is supposed to throw a new alert:
+
+    $webkit->alerts([]);
+    $webkit->click('...');
+    $webkit->wait_for_alert;
+
+=cut
+
+sub wait_for_alert {
+    my ($self, $text, $timeout) = @_;
+    $timeout ||= $self->default_timeout;
+
+    my $expiry = time + $timeout / 1000;
+
+    until (defined $text ? (@{ $self->alerts } and $self->alerts->[-1] eq $text) : @{ $self->alerts }) {
+        Gtk3->main_iteration while Gtk3->events_pending;
+
+        return 0 if time > $expiry;
+        usleep 10000;
+    }
+
+    return 1;
+}
+
 =head3 native_drag_and_drop_to_object($source, $target)
 
 Drag&drop that works with native HTML5 D&D events.

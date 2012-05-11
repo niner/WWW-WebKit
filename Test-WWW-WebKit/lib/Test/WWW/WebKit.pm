@@ -256,6 +256,24 @@ sub uncheck_ok {
 
 =head2 Additions to the Selenium API
 
+=head3 wait_for_alert_ok($text, $timeout)
+
+Wait for an alert with the given text to happen.
+If $text is undef, it waits for any alert. Since alerts do not get automatically cleared, this has to be done manually before causing the action that is supposed to throw a new alert:
+
+    $webkit->alerts([]);
+    $webkit->click('...');
+    $webkit->wait_for_alert;
+
+=cut
+
+sub wait_for_alert_ok {
+    my ($self, $text, $timeout) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->wait_for_alert($text, $timeout), "wait_for_alert_ok($text)");
+}
+
 =head3 native_drag_and_drop_to_object_ok($source, $target)
 
 Drag&drop test that works with native HTML5 D&D events.
