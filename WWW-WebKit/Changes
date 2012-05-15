@@ -1,7 +1,8 @@
-0.02 2012-04-17 10:00:00 CEST
+0.02 2012-05-15 15:15:00 CEST
     * Do not fail tests if Xvfb is not available
     * Be compatible with XSLoader < 0.14
     * Implemented check, uncheck, eval_is and is_ordered
+    * New method: wait_for_alert
     * Added some tests
     * Added documentation about implemented methods
 
