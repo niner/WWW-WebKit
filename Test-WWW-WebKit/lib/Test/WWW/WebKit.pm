@@ -254,6 +254,13 @@ sub uncheck_ok {
     ok($self->uncheck($locator), "uncheck_ok($locator)");
 }
 
+sub print_requested_ok {
+    my ($self) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->print_requested, "print_requested_ok");
+}
+
 =head2 Additions to the Selenium API
 
 =head3 wait_for_alert_ok($text, $timeout)

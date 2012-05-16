@@ -42,6 +42,10 @@ $sel->answer_on_next_prompt('test');
 #$sel->open("$Bin/test/prompt.html");
 #is($sel->get_text('id=result'), 'yes');
 
+$sel->open("$Bin/test/print.html");
+ok($sel->print_requested, "print requested");
+ok((not $sel->print_requested), "print isn't requested a second time");
+
 $sel->open("$Bin/test/attribute.html");
 is($sel->get_attribute('id=test@class'), 'foo bar');
 

@@ -99,6 +99,12 @@ has console_messages => (
     default => sub { [] },
 );
 
+has print_requests => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] },
+);
+
 has default_timeout => (
     is      => 'rw',
     isa     => 'Int',
@@ -152,6 +158,10 @@ sub init {
     $self->view->signal_connect('console-message' => sub {
         push @{ $self->console_messages }, $_[1];
         return FALSE;
+    });
+    $self->view->signal_connect('print-requested' => sub {
+        push @{ $self->print_requests }, $_[1];
+        return TRUE;
     });
 
     $self->window->show_all;
@@ -728,6 +738,16 @@ sub get_confirmation {
     my ($self) = @_;
 
     return pop @{ $self->confirmations };
+}
+
+=head3 print_requested()
+
+=cut
+
+sub print_requested {
+    my ($self) = @_;
+
+    return pop @{ $self->print_requests } ? 1 : 0;
 }
 
 =head3 answer_on_next_prompt($answer)
