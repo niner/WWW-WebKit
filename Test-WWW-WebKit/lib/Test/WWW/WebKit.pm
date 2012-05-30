@@ -30,13 +30,13 @@ None by default.
 use 5.10.0;
 use Moose;
 
-extends 'WWW::WebKit';
+extends 'WWW::WebKit' => { -version => 0.03 };
 
 use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use Test::More;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub open_ok {
     my ($self, $url) = @_;
