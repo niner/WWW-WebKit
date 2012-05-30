@@ -24,6 +24,7 @@ $deps->add_xs (@xs_files);
 WriteMakefile(
     NAME              => 'WWW::WebKit',
     VERSION_FROM      => 'lib/WWW/WebKit.pm', # finds $VERSION
+    LICENSE           => 'perl',
     PREREQ_PM         => {
         'Gtk3::WebKit'      => 0.02,
         Glib                => 0,

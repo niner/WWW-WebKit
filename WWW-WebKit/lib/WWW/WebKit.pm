@@ -38,7 +38,7 @@ use X11::Xlib;
 use Carp qw(carp croak);
 use XSLoader;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;

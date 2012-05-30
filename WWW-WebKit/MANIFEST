@@ -13,6 +13,7 @@ t/test/eval.html
 t/test/key_press.html
 t/test/load.html
 t/test/ordered.html
+t/test/print.html
 t/test/select.html
 t/test/type.html
 t/test/utf8.html
