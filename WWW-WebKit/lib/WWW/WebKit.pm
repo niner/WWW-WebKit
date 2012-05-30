@@ -45,6 +45,10 @@ use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
 
 XSLoader::load(__PACKAGE__, $VERSION);
 
+=head2 PROPERTIES
+
+=cut
+
 has xvfb => (
     is  => 'ro',
     isa => 'Bool',
@@ -93,6 +97,21 @@ has prompt_answers => (
     default => sub { [] },
 );
 
+=head3 console_messages
+
+WWW::WebKit saves console messages in this array but still let's the default console handler handle the message.
+I'm not sure if this is the best way to go but you should be able to override this easily:
+
+    use Glib qw(TRUE FALSE);
+    $webkit->view->signal_connect('console-message' => sub {
+        push @{ $webkit->console_messages }, $_[1];
+        return TRUE;
+    });
+
+The TRUE return value prevents any further handlers from kicking in which in turn should prevent any messages from getting printed.
+
+=cut
+
 has console_messages => (
     is      => 'rw',
     isa     => 'ArrayRef',
@@ -125,6 +144,8 @@ has modifiers => (
     isa     => 'HashRef',
     default => sub { {control => 0} },
 );
+
+=head2 METHODS
 
 =head3 init
 
