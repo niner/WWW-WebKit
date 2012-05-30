@@ -28,6 +28,11 @@ This module requires these other modules and libraries:
 On openSUSE, the following packages have to be installed:
   gobject-introspection-devel gtk3-devel libwebkitgtk3-devel perl-Glib
 
+DEVELOPMENT VERSION
+
+The current development version can be found in the git repository at:
+https://github.com/niner/WWW-WebKit
+
 COPYRIGHT AND LICENCE
 
 Copyright (C) 2011 by Stefan Seifert

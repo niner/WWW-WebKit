@@ -887,6 +887,9 @@ See L<WWW::Selenium> for API documentation.
 See L<Test::WWW::WebKit> for a replacement for L<Test::WWW::Selenium>.
 See L<Test::WWW::WebKit::Catalyst> for a replacement for L<Test::WWW::Selenium::Catalyst>.
 
+The current development version can be found in the git repository at:
+https://github.com/niner/WWW-WebKit
+
 =head1 AUTHOR
 
 Stefan Seifert, E<lt>nine@cpan.orgE<gt>
