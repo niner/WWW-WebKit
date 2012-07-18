@@ -31,6 +31,7 @@ WriteMakefile(
         Moose               => 0,
         'Time::HiRes'       => 0,
         'X11::Xlib'         => 0,
+        'X11::GUITest'      => 0,
         Carp                => 0,
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005

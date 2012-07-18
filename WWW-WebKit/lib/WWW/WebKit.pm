@@ -35,6 +35,7 @@ use Gtk3::WebKit;
 use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use X11::Xlib;
+use X11::GUITest qw(FindWindowLike GetWindowPos SetEventSendDelay MoveMouseAbs PressMouseButton ReleaseMouseButton :CONST);
 use Carp qw(carp croak);
 use XSLoader;
 
@@ -73,10 +74,21 @@ has window => (
         $sw->add($self->view);
 
         my $win = Gtk3::Window->new;
+        $win->set_title($self->window_title);
         $win->set_default_size(1600, 1200);
         $win->add($sw);
+
         return $win;
     }
+);
+
+has window_title => (
+    is      => 'ro',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        return 'www_webkit_window_' . int(rand() * 100000);
+    },
 );
 
 has alerts => (
@@ -214,6 +226,10 @@ sub setup_xvfb {
     sleep 1;
     $self->xvfb_server($server);
     $ENV{DISPLAY} = ":$display";
+
+    # HACK: re-init GUITest (X11::GUITest::INIT executes the initialization without xvfb)
+    X11::GUITest::DeInitGUITest();
+    X11::GUITest::InitGUITest();
 }
 
 sub DESTROY {
@@ -833,14 +849,18 @@ sub wait_for_alert {
     return 1;
 }
 
-=head3 native_drag_and_drop_to_object($source, $target)
+=head3 native_drag_and_drop_to_object($source, $target, $options)
 
 Drag&drop that works with native HTML5 D&D events.
 
 =cut
 
 sub native_drag_and_drop_to_object {
-    my ($self, $source, $target) = @_;
+    my ($self, $source, $target, $options) = @_;
+
+    my $steps = $options->{steps} // 5;
+    my $step_delay =  $options->{step_delay} // 50; # ms
+    SetEventSendDelay($options->{event_send_delay} // 5); # ms
 
     $source = $self->resolve_locator($source);
     my ($source_x, $source_y) = $self->get_center_screen_position($source);
@@ -848,39 +868,31 @@ sub native_drag_and_drop_to_object {
     $target = $self->resolve_locator($target);
     my ($target_x, $target_y) = $self->get_center_screen_position($target);
 
-    my $display = X11::Xlib->new;
-    $display->XTestFakeMotionEvent(0, $source_x, $source_y, 5);
-    $display->XFlush;
-    $self->pause(50); # Time for DnD to kick in
-    $display->XTestFakeButtonEvent(1, 1, 0);
-    $display->XFlush;
-    $self->pause(50);
-    $display->XTestFakeMotionEvent(0, $source_x, $source_y - 1, 5);
-    $display->XFlush;
-    $self->pause(50);
-    $display->XTestFakeMotionEvent(0, $target_x, $target_y + 1, 5);
-    $display->XFlush;
-    $self->pause(50);
-    $display->XTestFakeMotionEvent(0, $target_x, $target_y, 5);
-    $display->XFlush;
-    $self->pause(50);
-    $display->XTestFakeButtonEvent(1, 0, 5);
-    $display->XFlush;
-    # Mouse cursor jumps to 0,0 for no apparrent reason. Move it back to the target
-    $self->pause(50);
-    $display->XTestFakeMotionEvent(0, $target_x, $target_y + 1, 5);
-    $display->XFlush;
-    $self->pause(50);
-    $display->XTestFakeMotionEvent(0, $target_x, $target_y, 5);
-    $display->XFlush;
-    $self->pause(50);
+    my ($delta_x, $delta_y) = ($target_x - $source_x, $target_y - $source_y);
+    my ($step_x, $step_y) = (int($delta_x / $steps), int($delta_y / $steps));
+    my ($x, $y) = ($source_x, $source_y);
+
+    MoveMouseAbs($source_x, $source_y);
+    $self->pause($step_delay);
+    PressMouseButton(M_LEFT);
+    $self->pause($step_delay);
+
+    foreach (1..$steps) {
+        MoveMouseAbs($x += $step_x, $y += $step_y);
+        $self->pause($step_delay);
+    }
+
+    MoveMouseAbs($target_x, $target_y);
+    $self->pause($step_delay);
+    ReleaseMouseButton(M_LEFT);
+    $self->pause($step_delay);
 }
 
 sub get_screen_position {
     my ($self, $element) = @_;
 
-    my $x = 0;
-    my $y = 0;
+    my ($window_xid) = FindWindowLike($self->window_title);
+    my ($x, $y) = GetWindowPos($window_xid);
 
     do {
         $x += $element->get_offset_left;

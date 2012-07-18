@@ -7,13 +7,11 @@ BEGIN {
     use_ok 'WWW::WebKit';
 }
 
-my $xvfb = 1;
 my $sel = WWW::WebKit->new(xvfb => 1);
 eval { $sel->init; };
 if ($@ and $@ =~ /\ACould not start Xvfb/) {
     $sel = WWW::WebKit->new();
     $sel->init;
-    $xvfb = 0;
 }
 ok(1, 'init done');
 
@@ -26,11 +24,7 @@ $sel->open("$Bin/test/drag_and_drop.html");
 ok(1, 'opened');
 
 $sel->native_drag_and_drop_to_object('id=dragme', 'id=target');
-
-SKIP: {
-    skip 'drag and drop is not reliable without Xvfb', 1 unless $xvfb;
-    is($sel->resolve_locator('id=dragme')->get_parent_node->get_id, 'target');
-}
+is($sel->resolve_locator('id=dragme')->get_parent_node->get_id, 'target');
 
 $sel->refresh;
 
