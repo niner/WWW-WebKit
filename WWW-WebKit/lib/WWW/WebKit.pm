@@ -472,9 +472,11 @@ sub change_check {
 sub wait_for_page_to_load {
     my ($self, $timeout) = @_;
 
-    #TODO implement timeout
     $self->pause(300);
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+
+    return $self->wait_for_condition(sub {
+        $self->view->get_load_status eq 'finished';
+    }, $timeout);
 }
 
 =head3 wait_for_element_present($locator, $timeout)
@@ -483,20 +485,10 @@ sub wait_for_page_to_load {
 
 sub wait_for_element_present {
     my ($self, $locator, $timeout) = @_;
-    $timeout ||= $self->default_timeout;
 
-    my $element;
-    my $expiry = time + $timeout / 1000;
-
-    while (1) {
-        Gtk3->main_iteration while Gtk3->events_pending;
-
-        last if $element = $self->is_element_present($locator);
-        last if time > $expiry;
-        usleep 10000;
-    }
-
-    return $element;
+    return $self->wait_for_condition(sub {
+        $self->is_element_present($locator)
+    }, $timeout);
 }
 
 =head3 is_element_present($locator)
@@ -807,19 +799,10 @@ Works just like wait_for_element_present but instead of waiting for the element 
 
 sub wait_for_element_to_disappear {
     my ($self, $locator, $timeout) = @_;
-    $timeout ||= $self->default_timeout;
 
-    my $element;
-    my $expiry = time + $timeout / 1000;
-
-    while ($element = $self->is_element_present($locator)) {
-        Gtk3->main_iteration while Gtk3->events_pending;
-
-        return 0 if time > $expiry;
-        usleep 10000;
-    }
-
-    return 1;
+    return $self->wait_for_condition(sub {
+        not $self->is_element_present($locator)
+    }, $timeout);
 }
 
 =head3 wait_for_alert($text, $timeout)
@@ -835,18 +818,39 @@ If $text is undef, it waits for any alert. Since alerts do not get automatically
 
 sub wait_for_alert {
     my ($self, $text, $timeout) = @_;
+
+    return $self->wait_for_condition(sub {
+        defined $text ? (@{ $self->alerts } and $self->alerts->[-1] eq $text) : @{ $self->alerts };
+    }, $timeout);
+}
+
+=head3 wait_for_condition($condition, $timeout)
+
+Wait for the given $condition sub to return a true value or $timeout to expire.
+Returns the return value of $condition or 0 on timeout.
+
+    $webkit->wait_for_condition(sub {
+        $webkit->is_visible('id=foo');
+    }, 10000);
+
+=cut
+
+sub wait_for_condition {
+    my ($self, $condition, $timeout) = @_;
+
     $timeout ||= $self->default_timeout;
 
     my $expiry = time + $timeout / 1000;
 
-    until (defined $text ? (@{ $self->alerts } and $self->alerts->[-1] eq $text) : @{ $self->alerts }) {
+    my $result;
+    until ($result = $condition->()) {
         Gtk3->main_iteration while Gtk3->events_pending;
 
         return 0 if time > $expiry;
         usleep 10000;
     }
 
-    return 1;
+    return $result;
 }
 
 =head3 native_drag_and_drop_to_object($source, $target, $options)

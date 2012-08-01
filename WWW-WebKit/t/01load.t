@@ -81,8 +81,9 @@ is($sel->eval_js('document.getElementById("foo").firstChild.data'), 'bar');
 $sel->open("$Bin/test/type.html");
 $sel->type('id=foo', 'bar');
 $sel->click('id=submit');
-$sel->wait_for_page_to_load;
-is(URI->new($sel->view->get_uri)->query, 'foo=bar');
+$sel->wait_for_condition(sub {
+    URI->new($sel->view->get_uri)->query eq 'foo=bar'
+});
 
 $sel->open("$Bin/test/select.html");
 $sel->select('id=test', 'value=1');

@@ -104,6 +104,13 @@ sub wait_for_element_to_disappear_ok {
     ok($self->wait_for_element_to_disappear($locator, $timeout), "wait_for_element_to_disappear_ok($locator, $timeout, $description)");
 }
 
+sub wait_for_condition_ok {
+    my ($self, $condition, $timeout, $description) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->wait_for_condition($condition, $timeout), $description);
+}
+
 sub is_element_present_ok {
     my ($self, $locator) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
