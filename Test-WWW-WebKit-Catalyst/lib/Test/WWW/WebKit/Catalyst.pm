@@ -32,9 +32,9 @@ use Moose;
 use IO::Socket::INET;
 use Catalyst::EngineLoader;
 
-extends 'Test::WWW::WebKit';
+extends 'Test::WWW::WebKit' => { -version => 0.03 };
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 has app => (
     is       => 'ro',

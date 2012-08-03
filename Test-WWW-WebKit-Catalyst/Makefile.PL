@@ -7,7 +7,7 @@ WriteMakefile(
     NAME              => 'Test::WWW::WebKit::Catalyst',
     VERSION_FROM      => 'lib/Test/WWW/WebKit/Catalyst.pm', # finds $VERSION
     PREREQ_PM         => {
-        'Test::WWW::WebKit'      => 0.01,
+        'Test::WWW::WebKit'      => 0.04,
         'Test::More'             => 0,
         'IO::Socket::INET'       => 0,
         'Catalyst::EngineLoader' => 0,
