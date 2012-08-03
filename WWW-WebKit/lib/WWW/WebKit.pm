@@ -35,7 +35,6 @@ use Gtk3::WebKit;
 use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use X11::Xlib;
-use X11::GUITest qw(FindWindowLike GetWindowPos SetEventSendDelay MoveMouseAbs PressMouseButton ReleaseMouseButton :CONST);
 use Carp qw(carp croak);
 use XSLoader;
 
@@ -56,21 +55,36 @@ has xvfb => (
 );
 
 has view => (
-    is      => 'ro',
-    isa     => 'Gtk3::WebKit::WebView',
-    lazy    => 1,
-    default => sub {
+    is        => 'ro',
+    isa       => 'Gtk3::WebKit::WebView',
+    lazy      => 1,
+    clearer   => 'clear_view',
+    predicate => 'has_view',
+    default   => sub {
         Gtk3::WebKit::WebView->new
     },
 );
 
+has scrolled_view => (
+    is        => 'ro',
+    isa       => 'Gtk3::ScrolledWindow',
+    lazy      => 1,
+    clearer   => 'clear_scrolled_view',
+    predicate => 'has_scrolled_view',
+    default   => sub {
+        Gtk3::ScrolledWindow->new;
+    }
+);
+
 has window => (
-    is      => 'ro',
-    isa     => 'Gtk3::Window',
-    lazy    => 1,
-    default => sub {
+    is        => 'ro',
+    isa       => 'Gtk3::Window',
+    lazy      => 1,
+    clearer   => 'clear_window',
+    predicate => 'has_window',
+    default   => sub {
         my ($self) = @_;
-        my $sw = Gtk3::ScrolledWindow->new;
+        my $sw = $self->scrolled_view;
         $sw->add($self->view);
 
         my $win = Gtk3::Window->new;
@@ -107,6 +121,24 @@ has prompt_answers => (
     is      => 'rw',
     isa     => 'ArrayRef',
     default => sub { [] },
+);
+
+has display => (
+    is        => 'ro',
+    isa       => 'X11::Xlib',
+    lazy      => 1,
+    clearer   => 'clear_display',
+    predicate => 'has_display',
+    default   => sub {
+        my $display = X11::Xlib->new;
+        return $display;
+    },
+);
+
+has event_send_delay => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 5, # ms
 );
 
 =head3 console_messages
@@ -170,6 +202,12 @@ sub init {
 
     $self->setup_xvfb if $self->xvfb;
 
+    return $self->init_webkit;
+}
+
+sub init_webkit {
+    my ($self) = @_;
+
     Gtk3::init;
 
     $self->view->signal_connect('script-alert' => sub {
@@ -226,17 +264,42 @@ sub setup_xvfb {
     sleep 1;
     $self->xvfb_server($server);
     $ENV{DISPLAY} = ":$display";
+}
 
-    # HACK: re-init GUITest (X11::GUITest::INIT executes the initialization without xvfb)
-    X11::GUITest::DeInitGUITest();
-    X11::GUITest::InitGUITest();
+sub uninit {
+    my ($self) = @_;
+
+    if ($self->has_view) {
+        $self->scrolled_view->remove($self->view) if $self->has_scrolled_view and $self->scrolled_view and $self->view;
+        $self->view->destroy if $self->view;
+        $self->clear_view;
+    }
+
+    if ($self->has_scrolled_view) {
+        $self->window->remove($self->scrolled_view) if $self->has_window and $self->window and $self->scrolled_view;
+        $self->scrolled_view->destroy if $self->scrolled_view;
+        $self->clear_scrolled_view;
+    }
+
+    if ($self->has_window) {
+        $self->window->destroy if $self->window;
+        $self->clear_window;
+    }
+
+    $self->clear_display;
+
+    if ($self->xvfb_pid) {
+        local $SIG{PIPE} = "IGNORE";
+        kill 15, $self->xvfb_pid;
+        close $self->xvfb_server;
+        $self->xvfb_pid(0);
+    }
 }
 
 sub DESTROY {
     my ($self) = @_;
-    return unless $self->xvfb_pid;
 
-    kill 15, $self->xvfb_pid;
+    $self->uninit;
 }
 
 =head2 Implemented methods of the Selenium API
@@ -864,7 +927,7 @@ sub native_drag_and_drop_to_object {
 
     my $steps = $options->{steps} // 5;
     my $step_delay =  $options->{step_delay} // 50; # ms
-    SetEventSendDelay($options->{event_send_delay} // 5); # ms
+    $self->event_send_delay($options->{event_send_delay}) if $options->{event_send_delay};
 
     $source = $self->resolve_locator($source);
     my ($source_x, $source_y) = $self->get_center_screen_position($source);
@@ -876,27 +939,47 @@ sub native_drag_and_drop_to_object {
     my ($step_x, $step_y) = (int($delta_x / $steps), int($delta_y / $steps));
     my ($x, $y) = ($source_x, $source_y);
 
-    MoveMouseAbs($source_x, $source_y);
+    $self->move_mouse_abs($source_x, $source_y);
     $self->pause($step_delay);
-    PressMouseButton(M_LEFT);
+    $self->press_mouse_button(1);
     $self->pause($step_delay);
 
     foreach (1..$steps) {
-        MoveMouseAbs($x += $step_x, $y += $step_y);
+        $self->move_mouse_abs($x += $step_x, $y += $step_y);
         $self->pause($step_delay);
     }
 
-    MoveMouseAbs($target_x, $target_y);
+    $self->move_mouse_abs($target_x, $target_y);
     $self->pause($step_delay);
-    ReleaseMouseButton(M_LEFT);
+    $self->release_mouse_button(1);
     $self->pause($step_delay);
+}
+
+sub move_mouse_abs {
+    my ($self, $x, $y) = @_;
+
+    $self->display->XTestFakeMotionEvent(0, $x, $y, $self->event_send_delay);
+    $self->display->XFlush;
+}
+
+sub press_mouse_button {
+    my ($self, $button) = @_;
+
+    $self->display->XTestFakeButtonEvent($button, 1, $self->event_send_delay);
+    $self->display->XFlush;
+}
+
+sub release_mouse_button {
+    my ($self, $button) = @_;
+
+    $self->display->XTestFakeButtonEvent($button, 0, $self->event_send_delay);
+    $self->display->XFlush;
 }
 
 sub get_screen_position {
     my ($self, $element) = @_;
 
-    my ($window_xid) = FindWindowLike($self->window_title);
-    my ($x, $y) = GetWindowPos($window_xid);
+    my ($x, $y) = $self->scrolled_view->get_window->get_position;
 
     do {
         $x += $element->get_offset_left;

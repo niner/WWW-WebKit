@@ -51,10 +51,11 @@ has server => (
     is => 'rw',
 );
 
-after DESTROY => sub {
+before DESTROY => sub {
     my ($self) = @_;
     return unless $self->server_pid;
 
+    local $SIG{PIPE} = 'IGNORE';
     kill 15, $self->server_pid;
     close $self->server;
 };
@@ -92,7 +93,7 @@ sub start_catalyst_server {
 
             my $loader = Catalyst::EngineLoader->new(application_name => $self->app);
             eval {
-                $catalyst = $loader->auto(port => $port, host => 'localhost');
+                $catalyst = $self->load_application($loader, $port);
             };
             warn $@ if $@;
             last unless $@;
@@ -105,7 +106,13 @@ sub start_catalyst_server {
     }
 }
 
-before init => sub {
+sub load_application {
+    my ($self, $loader, $port) = @_;
+
+    return $loader->auto(port => $port, host => 'localhost');
+}
+
+before init_webkit => sub {
     my ($self) = @_;
 
     $ENV{CATALYST_PORT} = $self->start_catalyst_server;
