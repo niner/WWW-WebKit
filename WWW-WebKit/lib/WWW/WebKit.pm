@@ -700,15 +700,7 @@ sub get_title {
 
 sub mouse_over {
     my ($self, $locator) = @_;
-
-    my $document = $self->view->get_dom_document;
-    my $target = $self->resolve_locator($locator, $document) or return;
-
-    my $move = $document->create_event('MouseEvent');
-    $move->init_mouse_event('mouseover', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, FALSE, FALSE, FALSE, FALSE, 0, $target);
-    $target->dispatch_event($move);
-
-    return 1;
+    return $self->fire_mouse_event($locator, 'mouseover');
 }
 
 =head3 mouse_down($locator)
@@ -717,13 +709,31 @@ sub mouse_over {
 
 sub mouse_down {
     my ($self, $locator) = @_;
+    return $self->fire_mouse_event($locator, 'mousedown');
+}
+
+=head3 mouse_up($locator)
+
+=cut
+
+sub mouse_up {
+    my ($self, $locator) = @_;
+    return $self->fire_mouse_event($locator, 'mouseup');
+}
+
+=head3 fire_mouse_event($locator, $event_type)
+
+=cut
+
+sub fire_mouse_event {
+    my ($self, $locator, $event_type) = @_;
 
     my $document = $self->view->get_dom_document;
     my $target = $self->resolve_locator($locator, $document) or return;
 
-    my $click = $document->create_event('MouseEvent');
-    $click->init_mouse_event('mousedown', TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, $self->modifiers->{control} ? TRUE : FALSE, FALSE, FALSE, FALSE, 0, $target);
-    $target->dispatch_event($click);
+    my $event = $document->create_event('MouseEvent');
+    $event->init_mouse_event($event_type, TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, $self->modifiers->{control} ? TRUE : FALSE, FALSE, FALSE, FALSE, 0, $target);
+    $target->dispatch_event($event);
     return 1;
 }
 
