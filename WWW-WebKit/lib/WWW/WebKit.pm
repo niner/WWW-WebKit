@@ -926,14 +926,14 @@ sub wait_for_condition {
     return $result;
 }
 
-=head3 native_drag_and_drop_to_object($source, $target, $options)
+=head3 native_drag_and_drop_to_position($source, $target_x, $target_y, $options)
 
-Drag&drop that works with native HTML5 D&D events.
+Drag and drop $source to position ($target_x and $target_y).
 
 =cut
 
-sub native_drag_and_drop_to_object {
-    my ($self, $source, $target, $options) = @_;
+sub native_drag_and_drop_to_position {
+    my ($self, $source, $target_x, $target_y, $options) = @_;
 
     my $steps = $options->{steps} // 5;
     my $step_delay =  $options->{step_delay} // 50; # ms
@@ -941,9 +941,6 @@ sub native_drag_and_drop_to_object {
 
     $source = $self->resolve_locator($source);
     my ($source_x, $source_y) = $self->get_center_screen_position($source);
-
-    $target = $self->resolve_locator($target);
-    my ($target_x, $target_y) = $self->get_center_screen_position($target);
 
     my ($delta_x, $delta_y) = ($target_x - $source_x, $target_y - $source_y);
     my ($step_x, $step_y) = (int($delta_x / $steps), int($delta_y / $steps));
@@ -963,6 +960,23 @@ sub native_drag_and_drop_to_object {
     $self->pause($step_delay);
     $self->release_mouse_button(1);
     $self->pause($step_delay);
+    $self->move_mouse_abs($target_x, $target_y);
+    $self->pause($step_delay);
+}
+
+=head3 native_drag_and_drop_to_object($source, $target, $options)
+
+Drag and drop $source to $target.
+
+=cut
+
+sub native_drag_and_drop_to_object {
+    my ($self, $source, $target, $options) = @_;
+
+    $target = $self->resolve_locator($target);
+    my ($target_x, $target_y) = $self->get_center_screen_position($target);
+
+    $self->native_drag_and_drop_to_position($source, $target_x, $target_y, $options);
 }
 
 sub move_mouse_abs {

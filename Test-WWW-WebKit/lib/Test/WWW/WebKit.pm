@@ -288,17 +288,32 @@ sub wait_for_alert_ok {
     ok($self->wait_for_alert($text, $timeout), "wait_for_alert_ok($text)");
 }
 
-=head3 native_drag_and_drop_to_object_ok($source, $target)
+=head3 native_drag_and_drop_to_position_ok($source, $target_x, $target_y, $options)
 
-Drag&drop test that works with native HTML5 D&D events.
+Drag and drop $source to position ($target_x and $target_y)
+
+=cut
+
+sub native_drag_and_drop_to_position_ok {
+    my ($self, $source, $target_x, $target_y, $options) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    $self->native_drag_and_drop_to_position($source, $target_x, $target_y, $options);
+
+    ok(1, "native_drag_and_drop_to_position_ok($source, $target_x, $target_y)");
+}
+
+=head3 native_drag_and_drop_to_object_ok($source, $target, $options)
+
+Drag and drop $source to $target.
 
 =cut
 
 sub native_drag_and_drop_to_object_ok {
-    my ($self, $source, $target) = @_;
+    my ($self, $source, $target, $options) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    $self->native_drag_and_drop_to_object($source, $target);
+    $self->native_drag_and_drop_to_object($source, $target, $options);
 
     ok(1, "native_drag_and_drop_to_object_ok($source, $target)");
 }
