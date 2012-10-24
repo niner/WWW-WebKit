@@ -971,12 +971,42 @@ Drag and drop $source to $target.
 =cut
 
 sub native_drag_and_drop_to_object {
-    my ($self, $source, $target, $options) = @_;
+    my ($self, $source_locator, $target_locator, $options) = @_;
 
-    $target = $self->resolve_locator($target);
-    my ($target_x, $target_y) = $self->get_center_screen_position($target);
+    my $target = $self->resolve_locator($target_locator)
+        or croak "did not find element $target_locator";
 
-    $self->native_drag_and_drop_to_position($source, $target_x, $target_y, $options);
+    my $steps = $options->{steps} // 5;
+    my $step_delay =  $options->{step_delay} // 50; # ms
+    $self->event_send_delay($options->{event_send_delay}) if $options->{event_send_delay};
+
+    my $source = $self->resolve_locator($source_locator)
+        or croak "did not find element $source_locator";
+    my ($x, $y) = $self->get_center_screen_position($source);
+
+    $self->pause($step_delay);
+    $self->move_mouse_abs($x, $y);
+    $self->pause($step_delay);
+    $self->press_mouse_button(1);
+    $self->pause($step_delay);
+
+    foreach (0 .. $steps - 1) {
+        my ($target_x, $target_y) = $self->get_center_screen_position($target);
+
+        my $delta_x = $target_x - $x;
+        my $delta_y = $target_y - $y;
+        my $step_x = int($delta_x / ($steps - $_));
+        my $step_y = int($delta_y / ($steps - $_));
+
+
+        $self->move_mouse_abs($x += $step_x, $y += $step_y);
+        $self->pause($step_delay);
+    }
+
+    $self->release_mouse_button(1);
+    $self->pause($step_delay);
+    $self->move_mouse_abs($x, $y);
+    $self->pause($step_delay);
 }
 
 sub move_mouse_abs {
@@ -1002,6 +1032,8 @@ sub release_mouse_button {
 
 sub get_screen_position {
     my ($self, $element) = @_;
+
+    croak 'did not get an element to get the position from' unless $element;
 
     my ($x, $y) = $self->scrolled_view->get_window->get_position;
 
