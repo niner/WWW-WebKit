@@ -1003,6 +1003,11 @@ sub native_drag_and_drop_to_object {
         $self->pause($step_delay);
     }
 
+    # "move" mouse again to cause a dragover event on the target
+    # otherwise a drop may not work
+    $self->move_mouse_abs($x, $y);
+    $self->pause($step_delay);
+
     $self->release_mouse_button(1);
     $self->pause($step_delay);
     $self->move_mouse_abs($x, $y);
