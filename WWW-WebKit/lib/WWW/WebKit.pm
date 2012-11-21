@@ -610,6 +610,8 @@ sub key_press {
     $display->XTestFakeKeyEvent($keycode, 0, 1);
     $display->XFlush;
 
+    usleep 10000; # time for the X server to deliver the event
+
     # Unfortunately just does nothing:
     #Gtk3::test_widget_send_key($self->view, int($key), 'GDK_MODIFIER_MASK');
 
