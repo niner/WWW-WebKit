@@ -402,10 +402,16 @@ sub resolve_locator {
         return $document->get_element_by_id($id);
     }
     elsif (my ($css) = $locator =~ /^css=(.*)/) {
-        return $document->query_selector($css);
+        my $elements = $document->query_selector_all($css);
+        my $length = $elements->get_length;
+        croak "$css gave $length results" if $length != 1;
+        return $elements->item(0);
     }
     elsif (my ($class) = $locator =~ /^class=(.*)/) {
-        return $document->query_selector(".$class");
+        my $elements = $document->query_selector_all(".$class");
+        my $length = $elements->get_length;
+        croak ".$class gave $length results" if $length != 1;
+        return $elements->item(0);
     }
     elsif (my ($name) = $locator =~ /^name=(.*)/) {
         return $self->resolve_locator(qq{xpath=.//*[\@name="$name"]}, $document, $context);
