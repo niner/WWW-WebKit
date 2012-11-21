@@ -143,7 +143,7 @@ has event_send_delay => (
 
 =head3 console_messages
 
-WWW::WebKit saves console messages in this array but still let's the default console handler handle the message.
+WWW::WebKit saves console messages in this array but still lets the default console handler handle the message.
 I'm not sure if this is the best way to go but you should be able to override this easily:
 
     use Glib qw(TRUE FALSE);
@@ -479,6 +479,8 @@ sub click {
     my ($x, $y) = $self->get_center_screen_position($target);
     $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, $x, $y, $x, $y, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($click);
+
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
     return 1;
 }
 
@@ -535,8 +537,6 @@ sub change_check {
 sub wait_for_page_to_load {
     my ($self, $timeout) = @_;
 
-    $self->pause(300);
-
     return $self->wait_for_condition(sub {
         $self->view->get_load_status eq 'finished';
     }, $timeout);
@@ -586,6 +586,8 @@ sub type {
     my ($self, $locator, $text) = @_;
 
     $self->resolve_locator($locator)->set_value($text);
+
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 
     return 1;
 }
@@ -734,6 +736,8 @@ sub fire_mouse_event {
     my $event = $document->create_event('MouseEvent');
     $event->init_mouse_event($event_type, TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, $self->modifiers->{control} ? TRUE : FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($event);
+
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
     return 1;
 }
 
@@ -816,6 +820,8 @@ sub submit {
 
     my $form = $self->resolve_locator($locator) or return;
     $form->submit;
+
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 
     return 1;
 }
@@ -962,6 +968,8 @@ sub native_drag_and_drop_to_position {
     $self->pause($step_delay);
     $self->move_mouse_abs($target_x, $target_y);
     $self->pause($step_delay);
+
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
 =head3 native_drag_and_drop_to_object($source, $target, $options)
@@ -1012,6 +1020,8 @@ sub native_drag_and_drop_to_object {
     $self->pause($step_delay);
     $self->move_mouse_abs($x, $y);
     $self->pause($step_delay);
+
+    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
 }
 
 sub move_mouse_abs {
