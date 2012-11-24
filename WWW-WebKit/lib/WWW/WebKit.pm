@@ -616,7 +616,7 @@ sub key_press {
     $display->XTestFakeKeyEvent($keycode, 0, 1);
     $display->XFlush;
 
-    usleep 10000; # time for the X server to deliver the event
+    usleep 50000; # time for the X server to deliver the event
 
     # Unfortunately just does nothing:
     #Gtk3::test_widget_send_key($self->view, int($key), 'GDK_MODIFIER_MASK');
@@ -950,7 +950,7 @@ sub native_drag_and_drop_to_position {
     my ($self, $source, $target_x, $target_y, $options) = @_;
 
     my $steps = $options->{steps} // 5;
-    my $step_delay =  $options->{step_delay} // 50; # ms
+    my $step_delay =  $options->{step_delay} // 150; # ms
     $self->event_send_delay($options->{event_send_delay}) if $options->{event_send_delay};
 
     $source = $self->resolve_locator($source);
@@ -993,7 +993,7 @@ sub native_drag_and_drop_to_object {
         or croak "did not find element $target_locator";
 
     my $steps = $options->{steps} // 5;
-    my $step_delay =  $options->{step_delay} // 50; # ms
+    my $step_delay =  $options->{step_delay} // 150; # ms
     $self->event_send_delay($options->{event_send_delay}) if $options->{event_send_delay};
 
     my $source = $self->resolve_locator($source_locator)
