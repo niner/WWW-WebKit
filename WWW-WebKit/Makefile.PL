@@ -25,13 +25,20 @@ WriteMakefile(
     NAME              => 'WWW::WebKit',
     VERSION_FROM      => 'lib/WWW/WebKit.pm', # finds $VERSION
     LICENSE           => 'perl',
+    META_MERGE        => {
+        configure_requires => {
+            'ExtUtils::MakeMaker' => 0,
+            'ExtUtils::PkgConfig' => 0,
+            'ExtUtils::Depends' => 0,
+            'Glib::MakeHelper' => 0,
+        },
+    },
     PREREQ_PM         => {
         'Gtk3::WebKit'      => 0.02,
         Glib                => 0,
         Moose               => 0,
         'Time::HiRes'       => 0,
         'X11::Xlib'         => 0,
-        'X11::GUITest'      => 0,
         Carp                => 0,
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
