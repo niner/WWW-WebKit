@@ -1,3 +1,14 @@
+0.04 2012-11-24 10:00:00 CET
+    * New method: wait_for_condition
+    * New method: mouse_up
+    * New method: native_drag_and_drop_to_position
+    * Several fixes to drag&drop
+    * Remove implicit pause(300) from wait_for_page_to_load
+    * Croak on imprecise css selectors like with XPath queries
+    * Allow Gtk3 to be used in Catalyst backends
+    * No longer use X11::GUITest
+    * Add configure dependency information to META.yml and META.json
+
 0.03 2012-05-30 15:45:00 CEST
     * New method: wait_for_alert
 
