@@ -32,8 +32,13 @@ WriteMakefile(
             'ExtUtils::Depends' => 0,
             'Glib::MakeHelper' => 0,
         },
+        build_requires => {
+            'URI' => 0,
+            'Test::More' => 0.88,
+        },
     },
     PREREQ_PM         => {
+        'Gtk3'              => 0,
         'Gtk3::WebKit'      => 0.02,
         Glib                => 0,
         Moose               => 0,

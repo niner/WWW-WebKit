@@ -22,4 +22,5 @@ set_string_return_value(return_value, value)
 	gpointer return_value
 	char*	 value
     CODE:
+        /* probably shouldn't be a C string, but a WebDOMString or alike */
         *(char*)return_value = value;

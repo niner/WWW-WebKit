@@ -1,4 +1,7 @@
-use common::sense;
+use strict;
+use warnings;
+use utf8;
+
 use Test::More;
 use FindBin qw($Bin);
 use URI;
@@ -7,7 +10,7 @@ BEGIN {
     use_ok 'WWW::WebKit';
 }
 
-my $sel = WWW::WebKit->new(xvfb => 1);
+my $sel = WWW::WebKit->new(xvfb => 0);
 eval { $sel->init; };
 if ($@ and $@ =~ /\ACould not start Xvfb/) {
     $sel = WWW::WebKit->new();
@@ -33,8 +36,8 @@ is(pop @{ $sel->confirmations }, 'test');
 is($sel->get_text('id=result'), 'yes');
 
 $sel->answer_on_next_prompt('test');
-#$sel->open("$Bin/test/prompt.html");
-#is($sel->get_text('id=result'), 'yes');
+# $sel->open("$Bin/test/prompt.html");
+# is($sel->get_text('id=result'), 'yes');
 
 $sel->open("$Bin/test/print.html");
 ok($sel->print_requested, "print requested");
