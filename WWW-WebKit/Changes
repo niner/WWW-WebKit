@@ -1,3 +1,6 @@
+0.05 2012-11-26 09:30:00 CET
+    * Added missing build_requires
+
 0.04 2012-11-24 10:00:00 CET
     * New method: wait_for_condition
     * New method: mouse_up
