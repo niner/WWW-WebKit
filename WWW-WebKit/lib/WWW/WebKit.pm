@@ -836,6 +836,12 @@ sub submit {
 
 =head3 get_html_source()
 
+Returns the source code of the current HTML page as it was transferred over the network.
+
+Use $webkit->view->get_dom_document->get_document_element->get_outer_html to get the serialized
+current DOM tree (with all modifications by Javascript)
+
+
 =cut
 
 sub get_html_source {
