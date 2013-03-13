@@ -72,6 +72,9 @@ is(pop @{ $sel->alerts }, 13);
 $sel->key_press('css=body', 'a');
 $sel->wait_for_alert('65');
 is(pop @{ $sel->alerts }, 65);
+$sel->key_press('css=body', '\032');
+$sel->wait_for_alert;
+is(pop @{ $sel->alerts }, 32);
 
 $sel->open("$Bin/test/ordered.html");
 ok($sel->is_ordered('id=first', 'id=second'), 'is_ordered is correct for ordered elements');
