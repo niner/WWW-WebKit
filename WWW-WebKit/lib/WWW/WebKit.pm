@@ -189,6 +189,12 @@ has modifiers => (
     default => sub { {control => 0} },
 );
 
+has pending => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => 0,
+);
+
 =head2 METHODS
 
 =head3 init
@@ -235,10 +241,24 @@ sub init_webkit {
         return TRUE;
     });
 
+    $self->view->signal_connect('resource-request-starting' => sub {
+        return $self->handle_resource_request(@_);
+    });
+
     $self->window->show_all;
     Gtk3->main_iteration while Gtk3->events_pending;
 
     return $self;
+}
+
+sub handle_resource_request {
+    my ($self, $view, $frame, $resource, $request, $response, $data) = @_;
+
+    $self->pending($self->pending + 1);
+
+    $resource->signal_connect('response-received' => sub {
+        $self->pending($self->pending - 1);
+    });
 }
 
 sub setup_xvfb {
@@ -887,6 +907,21 @@ sub answer_on_next_prompt {
 }
 
 =head2 Additions to the Selenium API
+
+=head3 wait_for_pending_requests($timeout)
+
+Waits for all pending requests to finish. This is most useful for AJAX applications,
+since wait_for_page_to_load does not wait for AJAX requests.
+
+=cut
+
+sub wait_for_pending_requests {
+    my ($self, $timeout) = @_;
+
+    return $self->wait_for_condition(sub {
+        $self->pending == 0;
+    }, $timeout);
+}
 
 =head3 wait_for_element_to_disappear($locator, $timeout)
 
