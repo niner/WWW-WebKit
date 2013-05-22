@@ -112,7 +112,7 @@ sub load_application {
     return $loader->auto(port => $port, host => 'localhost');
 }
 
-before init_webkit => sub {
+before init => sub {
     my ($self) = @_;
 
     $ENV{CATALYST_PORT} = $self->start_catalyst_server;
