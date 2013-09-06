@@ -176,15 +176,6 @@ has default_timeout => (
     default => 30_000,
 );
 
-has xvfb_pid => (
-    is  => 'rw',
-    isa => 'Int',
-);
-
-has xvfb_server => (
-    is => 'rw',
-);
-
 has modifiers => (
     is      => 'ro',
     isa     => 'HashRef',
@@ -216,6 +207,8 @@ sub init {
 sub init_webkit {
     my ($self) = @_;
 
+    # connect to X server to keep it alive till we don't need it anymore
+    $self->display;
     Gtk3::init;
 
     $self->view->signal_connect('script-alert' => sub {
@@ -275,26 +268,24 @@ sub setup_xvfb {
         die 'Could not start Xvfb';
     }
 
-    # restore STDERR
-    open STDERR, '>&', $stderr;
-
     pipe my $read, my $write;
+    my $writefd = fileno $write;
 
     # prevent pipe FD from being closed on exec when starting Xvfb:
-    $SYSTEM_FD_MAX = fileno $write;
+    $SYSTEM_FD_MAX = $writefd;
     my $flags = fcntl $write, F_GETFD, 0;
     $flags &= ~FD_CLOEXEC;
     fcntl $write, F_SETFD, $flags;
 
-    $self->xvfb_pid(
-        open my $server, '|-', "Xvfb -nolisten tcp -screen 0 1600x1200x24 -displayfd " . fileno $write
-    );
+    system ("Xvfb -nolisten tcp -terminate -screen 0 1600x1200x24 -displayfd $writefd &");
+
+    # restore STDERR
+    open STDERR, '>&', $stderr;
 
     # Xvfb prints the display number newline terminated to our pipe
     my $display = <$read>;
     chomp $display;
 
-    $self->xvfb_server($server);
     $ENV{DISPLAY} = ":$display";
 
     return;
@@ -321,13 +312,6 @@ sub uninit {
     }
 
     $self->clear_display;
-
-    if ($self->xvfb_pid) {
-        local $SIG{PIPE} = "IGNORE";
-        kill 15, $self->xvfb_pid;
-        close $self->xvfb_server;
-        $self->xvfb_pid(0);
-    }
 }
 
 sub DESTROY {
