@@ -37,6 +37,8 @@ use Time::HiRes qw(time usleep);
 use X11::Xlib;
 use Carp qw(carp croak);
 use XSLoader;
+use English '-no_match_vars';
+use POSIX qw<F_SETFD F_GETFD FD_CLOEXEC>;
 
 our $VERSION = '0.05';
 
@@ -264,6 +266,7 @@ sub handle_resource_request {
 sub setup_xvfb {
     my ($self) = @_;
 
+    # close STDERR to avoid Xvfb's noise
     open my $stderr, '>&', \*STDERR or die "Can't dup STDERR: $!";
     close STDERR;
 
@@ -272,18 +275,29 @@ sub setup_xvfb {
         die 'Could not start Xvfb';
     }
 
-    my ($server, $display);
-    while (1) {
-        $display = 1 + int(rand(98));
-
-        last if $self->xvfb_pid(open $server, '|-', "Xvfb :$display -screen 0 1600x1200x24");
-    }
-
+    # restore STDERR
     open STDERR, '>&', $stderr;
 
-    sleep 1;
+    pipe my $read, my $write;
+
+    # prevent pipe FD from being closed on exec when starting Xvfb:
+    $SYSTEM_FD_MAX = fileno $write;
+    my $flags = fcntl $write, F_GETFD, 0;
+    $flags &= ~FD_CLOEXEC;
+    fcntl $write, F_SETFD, $flags;
+
+    $self->xvfb_pid(
+        open my $server, '|-', "Xvfb -nolisten tcp -screen 0 1600x1200x24 -displayfd " . fileno $write
+    );
+
+    # Xvfb prints the display number newline terminated to our pipe
+    my $display = <$read>;
+    chomp $display;
+
     $self->xvfb_server($server);
     $ENV{DISPLAY} = ":$display";
+
+    return;
 }
 
 sub uninit {
