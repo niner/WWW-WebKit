@@ -30,7 +30,7 @@ None by default.
 use 5.10.0;
 use Moose;
 
-extends 'WWW::WebKit' => { -version => 0.04 };
+extends 'WWW::WebKit' => { -version => 0.06 };
 
 use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);

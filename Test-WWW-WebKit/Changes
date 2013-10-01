@@ -1,3 +1,9 @@
+0.03 2013-10-01 22:45:00 CEST
+    * New method: wait_for_condition_ok
+    * New method: native_drag_and_drop_to_position_ok
+    * Better diagnostics on wait_for_alert_ok fail
+    * Requires WWW::Webkit version 0.06
+
 0.02 2012-05-30 16:00:00 CEST
     * New method: wait_for_alert_ok
     * New method: eval_is
