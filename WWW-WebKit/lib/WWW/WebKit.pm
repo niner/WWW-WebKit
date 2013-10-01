@@ -840,7 +840,7 @@ sub is_visible {
     do {
         $style = $view->get_computed_style($element, '');
         $visible &&= $style->get_property_value('display') eq 'none' ? 0 : 1;
-    } while ($visible and $element = $element->get_parent_node);
+    } while ($visible and $element = $element->get_parent_node and $element->get_node_type == 1);
 
     return $visible;
 }
