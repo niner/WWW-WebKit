@@ -1,3 +1,10 @@
+0.06 2013-10-01 22:30:00 CEST
+    * Fix compatability with Glib::Object::Introspection 0.013 and newer
+    * Made starting Xvfb reliable by fixing X display number collisions)
+    * New method wait_for_pending_requests
+    * Support more special keys in key_press
+    * Improved documentation
+
 0.05 2012-11-26 09:30:00 CET
     * Added missing build_requires
 
