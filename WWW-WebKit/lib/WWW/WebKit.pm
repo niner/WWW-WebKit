@@ -440,7 +440,7 @@ sub resolve_locator {
     }
     elsif (my ($xpath) = $locator =~ /^(?: xpath=)?(.*)/xm) {
         my $resolver = $document->create_ns_resolver($context);
-        my $xpath_results = $document->evaluate($xpath, $context, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
+        my $xpath_results = $document->evaluate($xpath, $context, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, Gtk3::WebKit::DOMXPathResult->new);
         my $length = $xpath_results->get_snapshot_length;
         croak "$xpath gave $length results: " . join(', ', map $xpath_results->snapshot_item($_), 0 .. $length - 1) if $length != 1;
         return $xpath_results->snapshot_item(0);
@@ -459,7 +459,7 @@ sub get_xpath_count {
 
     my $document = $self->view->get_dom_document;
     my $resolver = $document->create_ns_resolver($document);
-    my $xpath_results = $document->evaluate($xpath, $document, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, undef);
+    my $xpath_results = $document->evaluate($xpath, $document, $resolver, ORDERED_NODE_SNAPSHOT_TYPE, Gtk3::WebKit::DOMXPathResult->new);
     return $xpath_results->get_snapshot_length;
 }
 
