@@ -241,7 +241,7 @@ sub init_webkit {
     });
 
     $self->window->show_all;
-    Gtk3->main_iteration while Gtk3->events_pending;
+    Gtk3::main_iteration while Gtk3::events_pending;
 
     return $self;
 }
@@ -349,7 +349,7 @@ sub open {
 
     $self->view->open($url);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 }
 
 =head3 refresh()
@@ -360,7 +360,7 @@ sub refresh {
     my ($self) = @_;
 
     $self->view->reload;
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 }
 
 =head3 go_back()
@@ -371,7 +371,7 @@ sub go_back {
     my ($self) = @_;
 
     $self->view->go_back;
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 }
 
 sub eval_js {
@@ -379,7 +379,7 @@ sub eval_js {
 
     $js =~ s/'/\\'/g;
     $self->view->execute_script("alert(eval('$js'));");
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
     return pop @{ $self->alerts };
 }
 
@@ -485,7 +485,7 @@ sub select {
             $changed->init_event('change', TRUE, TRUE);
             $select->dispatch_event($changed);
 
-            Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+            Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
             return 1;
         }
     }
@@ -508,7 +508,7 @@ sub click {
     $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, $x, $y, $x, $y, FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($click);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
     return 1;
 }
 
@@ -554,7 +554,7 @@ sub change_check {
     $changed->init_event('change', TRUE, TRUE);
     $element->dispatch_event($changed);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
     return 1;
 }
 
@@ -615,7 +615,7 @@ sub type {
 
     $self->resolve_locator($locator)->set_value($text);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 
     return 1;
 }
@@ -647,7 +647,7 @@ sub key_press {
     # Unfortunately just does nothing:
     #Gtk3::test_widget_send_key($self->view, int($key), 'GDK_MODIFIER_MASK');
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 
     return 1;
 }
@@ -690,7 +690,7 @@ sub pause {
     my $expiry = time + $time / 1000;
 
     while (1) {
-        Gtk3->main_iteration while Gtk3->events_pending;
+        Gtk3::main_iteration while Gtk3::events_pending;
 
         if (time < $expiry) {
             usleep 10000;
@@ -771,7 +771,7 @@ sub fire_mouse_event {
     $event->init_mouse_event($event_type, TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, $self->modifiers->{control} ? TRUE : FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($event);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
     return 1;
 }
 
@@ -855,7 +855,7 @@ sub submit {
     my $form = $self->resolve_locator($locator) or return;
     $form->submit;
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 
     return 1;
 }
@@ -978,7 +978,7 @@ sub wait_for_condition {
 
     my $result;
     until ($result = $condition->()) {
-        Gtk3->main_iteration while Gtk3->events_pending;
+        Gtk3::main_iteration while Gtk3::events_pending;
 
         return 0 if time > $expiry;
         usleep 10000;
@@ -1024,7 +1024,7 @@ sub native_drag_and_drop_to_position {
     $self->move_mouse_abs($target_x, $target_y);
     $self->pause($step_delay);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 }
 
 =head3 native_drag_and_drop_to_object($source, $target, $options)
@@ -1076,7 +1076,7 @@ sub native_drag_and_drop_to_object {
     $self->move_mouse_abs($x, $y);
     $self->pause($step_delay);
 
-    Gtk3->main_iteration while Gtk3->events_pending or $self->view->get_load_status ne 'finished';
+    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
 }
 
 sub move_mouse_abs {
