@@ -1,5 +1,7 @@
 package TestApp::Controller::Root;
-use common::sense;
+use strict;
+use warnings;
+use utf8;
 
 use base qw/Catalyst::Controller/;
 
