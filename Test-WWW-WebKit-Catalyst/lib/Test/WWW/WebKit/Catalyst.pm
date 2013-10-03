@@ -86,6 +86,8 @@ sub start_catalyst_server {
             exit 0;
         };
 
+        $0 .= ' ' . $self->app;
+
         my ($port, $catalyst);
         while (1) {
             $port = 1024 + int(rand(65535 - 1024));
