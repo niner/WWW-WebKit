@@ -499,17 +499,7 @@ sub select {
 
 sub click {
     my ($self, $locator) = @_;
-
-    my $document = $self->view->get_dom_document;
-    my $target = $self->resolve_locator($locator, $document) or return;
-
-    my $click = $document->create_event('MouseEvent');
-    my ($x, $y) = $self->get_center_screen_position($target);
-    $click->init_mouse_event('click', TRUE, TRUE, $document->get_property('default_view'), 1, $x, $y, $x, $y, FALSE, FALSE, FALSE, FALSE, 0, $target);
-    $target->dispatch_event($click);
-
-    Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
-    return 1;
+    return $self->fire_mouse_event($locator, 'click');
 }
 
 =head3 check($locator)
@@ -768,7 +758,8 @@ sub fire_mouse_event {
     my $target = $self->resolve_locator($locator, $document) or return;
 
     my $event = $document->create_event('MouseEvent');
-    $event->init_mouse_event($event_type, TRUE, TRUE, $document->get_property('default_view'), 1, 0, 0, 0, 0, $self->modifiers->{control} ? TRUE : FALSE, FALSE, FALSE, FALSE, 0, $target);
+    my ($x, $y) = $self->get_center_screen_position($target);
+    $event->init_mouse_event($event_type, TRUE, TRUE, $document->get_property('default_view'), 1, $x, $y, $x, $y, $self->modifiers->{control} ? TRUE : FALSE, FALSE, FALSE, FALSE, 0, $target);
     $target->dispatch_event($event);
 
     Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
