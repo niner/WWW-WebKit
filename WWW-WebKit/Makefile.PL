@@ -25,17 +25,15 @@ WriteMakefile(
     NAME              => 'WWW::WebKit',
     VERSION_FROM      => 'lib/WWW/WebKit.pm', # finds $VERSION
     LICENSE           => 'perl',
-    META_MERGE        => {
-        configure_requires => {
-            'ExtUtils::MakeMaker' => 0,
-            'ExtUtils::PkgConfig' => 0,
-            'ExtUtils::Depends' => 0,
-            'Glib::MakeHelper' => 0,
-        },
-        build_requires => {
-            'URI' => 0,
-            'Test::More' => 0.88,
-        },
+    CONFIGURE_REQUIRES => {
+        'ExtUtils::MakeMaker' => 0,
+        'ExtUtils::PkgConfig' => 0,
+        'ExtUtils::Depends' => 0,
+        'Glib::MakeHelper' => 0,
+    },
+    BUILD_REQUIRES => {
+        'URI' => 0,
+        'Test::More' => 0.88,
     },
     PREREQ_PM         => {
         'Gtk3'              => 0,
