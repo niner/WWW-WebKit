@@ -16,6 +16,10 @@ if ($@ and $@ =~ /\ACould not start Xvfb/) {
     $sel = WWW::WebKit->new();
     $sel->init;
 }
+elsif ($@) {
+    diag($@);
+    fail('init webkit');
+}
 ok(1, 'init done');
 
 $sel->open("$Bin/test/load.html");
@@ -100,5 +104,11 @@ is(pop @{ $sel->alerts }, 'change event fired');
 $sel->open("$Bin/test/utf8.html");
 is($sel->resolve_locator('xpath=//*[text() = "föö"]')->get_id, 'test');
 ok($sel->is_element_present('xpath=//*[text() = "föö"]'));
+
+$sel->disable_plugins;
+ok(1, 'disable_plugins worked');
+
+$sel->open("$Bin/test/load.html");
+ok(1, 'loaded test page without plugins');
 
 done_testing;
