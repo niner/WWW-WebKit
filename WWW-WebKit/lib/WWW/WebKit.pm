@@ -378,6 +378,7 @@ sub eval_js {
     my ($self, $js) = @_;
 
     $js =~ s/'/\\'/g;
+    $js =~ s/(?<!\\)\n/\\\n/g;
     $self->view->execute_script("alert(eval('$js'));");
     Gtk3::main_iteration while Gtk3::events_pending or $self->view->get_load_status ne 'finished';
     return pop @{ $self->alerts };
