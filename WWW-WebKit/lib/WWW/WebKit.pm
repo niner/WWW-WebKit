@@ -793,7 +793,10 @@ sub get_value {
 
     my $element = $self->resolve_locator($locator);
 
-    if (lc $element->get_node_name eq 'input' and $element->get_property('type') ~~ [qw(checkbox radio)]) {
+    if (
+        lc $element->get_node_name eq 'input'
+        and $element->get_property('type') =~ /\A(checkbox|radio)\z/
+    ) {
         return $element->get_checked ? 'on' : 'off';
     }
     else {
