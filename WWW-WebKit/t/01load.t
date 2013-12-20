@@ -31,7 +31,7 @@ $sel->open("$Bin/test/drag_and_drop.html");
 ok(1, 'opened');
 
 $sel->native_drag_and_drop_to_object('id=dragme', 'id=target');
-is($sel->resolve_locator('id=dragme')->get_parent_node->get_id, 'target');
+is($sel->resolve_locator('id=dragme')->get_parent_node->Gtk3::WebKit::DOMElement::get_id, 'target');
 
 $sel->refresh;
 
@@ -102,7 +102,7 @@ $sel->select('id=test_event', 'value=1');
 is(pop @{ $sel->alerts }, 'change event fired');
 
 $sel->open("$Bin/test/utf8.html");
-is($sel->resolve_locator('xpath=//*[text() = "föö"]')->get_id, 'test');
+is($sel->resolve_locator('xpath=//*[text() = "föö"]')->Gtk3::WebKit::DOMElement::get_id, 'test');
 ok($sel->is_element_present('xpath=//*[text() = "föö"]'));
 
 $sel->disable_plugins;
