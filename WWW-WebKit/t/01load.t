@@ -95,6 +95,20 @@ $sel->wait_for_condition(sub {
     URI->new($sel->view->get_uri)->query eq 'foo=bar'
 });
 
+$sel->open("$Bin/test/type.html");
+$sel->type_keys('id=foo', 'bar');
+$sel->click('id=submit');
+$sel->wait_for_condition(sub {
+    URI->new($sel->view->get_uri)->query eq 'foo=bar'
+});
+
+$sel->open("$Bin/test/type.html");
+$sel->type_keys('id=foo', '1,5 Bar');
+$sel->click('id=submit');
+$sel->wait_for_condition(sub {
+    URI->new($sel->view->get_uri)->query eq 'foo=1%2C5+Bar'
+});
+
 $sel->open("$Bin/test/select.html");
 $sel->select('id=test', 'value=1');
 is(pop @{ $sel->alerts }, 'onchange fired');

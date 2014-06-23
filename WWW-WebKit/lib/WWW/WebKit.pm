@@ -179,7 +179,7 @@ has default_timeout => (
 has modifiers => (
     is      => 'ro',
     isa     => 'HashRef',
-    default => sub { {control => 0} },
+    default => sub { {control => 0, 'shift' => 0} },
 );
 
 has pending => (
@@ -612,12 +612,18 @@ sub type {
 }
 
 my %keycodes = (
-    '\013' => 36,
-    '\027' => 9,
-    '\032' => 65,
-    '\127' => 119,
-    '\045' => 20,
-    '\046' => 60,
+    '\013' => 36,  # Carriage Return
+    "\n"   => 36,  # Carriage Return
+    '\027' => 9,   # Escape
+    ' '    => 65,  # Space
+    '\032' => 65,  # Space
+    '\127' => 119, # Delete
+    '\044' => 59,  # Comma
+    ','    => 59,  # Comma
+    '\045' => 20,  # Hyphen
+    '-'    => 20,  # Hyphen
+    '\046' => 60,  # Dot
+    '.'    => 60,  # Dot
 );
 
 sub key_press {
@@ -629,8 +635,11 @@ sub key_press {
     $elem ||= $self->resolve_locator($locator) or return;
     $elem->focus;
 
+    my $shift_keycode = 62;
+    $display->XTestFakeKeyEvent($shift_keycode, 1, 1) if $self->modifiers->{'shift'};
     $display->XTestFakeKeyEvent($keycode, 1, 1);
     $display->XTestFakeKeyEvent($keycode, 0, 1);
+    $display->XTestFakeKeyEvent($shift_keycode, 0, 1) if $self->modifiers->{'shift'};
     $display->XFlush;
 
     usleep 50000; # time for the X server to deliver the event
@@ -653,10 +662,18 @@ sub type_keys {
     my $element = $self->resolve_locator($locator) or return;
 
     foreach (split //, $string) {
+        $self->shift_key_down if $self->is_upper_case($_);
         $self->key_press($locator, $_, $element) or return;
+        $self->shift_key_up if $self->is_upper_case($_);
     }
 
     return 1;
+}
+
+sub is_upper_case {
+    my ($self, $char) = @_;
+
+    return $char =~ /[A-Z]/;
 }
 
 sub control_key_down {
@@ -669,6 +686,18 @@ sub control_key_up {
     my ($self) = @_;
 
     $self->modifiers->{control} = 0;
+}
+
+sub shift_key_down {
+    my ($self) = @_;
+
+    $self->modifiers->{'shift'} = 1;
+}
+
+sub shift_key_up {
+    my ($self) = @_;
+
+    $self->modifiers->{'shift'} = 0;
 }
 
 =head3 pause($time)
