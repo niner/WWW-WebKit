@@ -254,6 +254,9 @@ sub handle_resource_request {
     $resource->signal_connect('response-received' => sub {
         $self->pending($self->pending - 1);
     });
+    $resource->signal_connect('load-failed' => sub {
+       $self->pending($self->pending - 1);
+    });
 }
 
 sub setup_xvfb {
