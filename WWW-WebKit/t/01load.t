@@ -109,6 +109,14 @@ $sel->wait_for_condition(sub {
     URI->new($sel->view->get_uri)->query eq 'foo=1%2C5+Bar'
 });
 
+$sel->open("$Bin/test/delete.html");
+$sel->delete_text('id=foo');
+$sel->delete_text('id=bar');
+$sel->click('id=submit');
+$sel->wait_for_condition(sub {
+    URI->new($sel->view->get_uri)->query eq 'foo2=&bar2=&baz2=27+Baz'
+});
+
 $sel->open("$Bin/test/select.html");
 $sel->select('id=test', 'value=1');
 is(pop @{ $sel->alerts }, 'onchange fired');

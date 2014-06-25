@@ -621,6 +621,7 @@ my %keycodes = (
     ' '    => 65,  # Space
     '\032' => 65,  # Space
     '\127' => 119, # Delete
+    '\8'   => 22,  # Backspace
     '\044' => 59,  # Comma
     ','    => 59,  # Comma
     '\045' => 20,  # Hyphen
@@ -669,6 +670,24 @@ sub type_keys {
         $self->key_press($locator, $_, $element) or return;
         $self->shift_key_up if $self->is_upper_case($_);
     }
+
+    return 1;
+}
+
+=head3 delete_text($locator)
+
+Delete text in elements where contenteditable="true".
+
+=cut
+
+sub delete_text {
+    my ($self, $locator) = @_;
+
+    my $element = $self->resolve_locator($locator) or return;
+
+    while ($self->get_text($locator)) {
+        $self->key_press($locator, '\127', $element); # Delete
+    };
 
     return 1;
 }
