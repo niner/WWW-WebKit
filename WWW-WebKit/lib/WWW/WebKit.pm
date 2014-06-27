@@ -255,7 +255,9 @@ sub handle_resource_request {
         $self->pending($self->pending - 1);
     });
     $resource->signal_connect('load-failed' => sub {
-       $self->pending($self->pending - 1);
+        # If someone decides not to wait_for_pending_requests, this signal is received
+        # during global destruction with $self beeing undefined.
+        $self->pending($self->pending - 1) if defined $self;
     });
 }
 
