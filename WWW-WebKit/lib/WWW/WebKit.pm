@@ -182,10 +182,10 @@ has modifiers => (
     default => sub { {control => 0, 'shift' => 0} },
 );
 
-has pending => (
+has pending_requests => (
     is      => 'rw',
-    isa     => 'Int',
-    default => 0,
+    isa     => 'HashRef',
+    default => sub { {} },
 );
 
 =head2 METHODS
@@ -246,18 +246,24 @@ sub init_webkit {
     return $self;
 }
 
+sub pending {
+    my ($self) = @_;
+
+    return scalar keys %{ $self->pending_requests };
+}
+
 sub handle_resource_request {
     my ($self, $view, $frame, $resource, $request, $response, $data) = @_;
 
-    $self->pending($self->pending + 1);
+    $self->pending_requests->{"$request"}++;
 
     $resource->signal_connect('response-received' => sub {
-        $self->pending($self->pending - 1);
+        delete $self->pending_requests->{"$request"};
     });
     $resource->signal_connect('load-failed' => sub {
         # If someone decides not to wait_for_pending_requests, this signal is received
         # during global destruction with $self beeing undefined.
-        $self->pending($self->pending - 1) if defined $self;
+        delete $self->pending_requests->{"$request"} if defined $self;
     });
 }
 
