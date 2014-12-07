@@ -1,3 +1,13 @@
+0.07 2014-12-07 12:00:00 CET
+    * New method: disable_plugins
+    * Allow multi-line JS in eval_js
+    * Fix BUILD_REQUIRES syntax in Makefile.PL
+    * Fixes experimental warnings on Perl 5.18
+    * Support capital letters and special character literals in key_press and type_keys
+    * Fix wait_for_pending_requests sometimes waiting for finished requests
+    * Extend Keycodes, Uppercase Characters in type_keys, delete_text
+    * Allow overriding the event processing loops in subclasses
+
 0.06 2013-10-01 22:30:00 CEST
     * Fix compatability with Glib::Object::Introspection 0.013 and newer
     * Made starting Xvfb reliable by fixing X display number collisions)
