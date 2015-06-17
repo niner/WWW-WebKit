@@ -692,24 +692,6 @@ sub type_keys {
     return 1;
 }
 
-=head3 delete_text($locator)
-
-Delete text in elements where contenteditable="true".
-
-=cut
-
-sub delete_text {
-    my ($self, $locator) = @_;
-
-    my $element = $self->resolve_locator($locator) or return;
-
-    while ($self->get_text($locator)) {
-        $self->key_press($locator, '\127', $element); # Delete
-    };
-
-    return 1;
-}
-
 sub is_upper_case {
     my ($self, $char) = @_;
 
@@ -1202,6 +1184,24 @@ sub disable_plugins {
     my $settings = $self->view->get_settings;
     $settings->set_property(enable_plugins => FALSE);
     $self->view->set_settings($settings);
+}
+
+=head3 delete_text($locator)
+
+Delete text in elements where contenteditable="true".
+
+=cut
+
+sub delete_text {
+    my ($self, $locator) = @_;
+
+    my $element = $self->resolve_locator($locator) or return;
+
+    while ($self->get_text($locator)) {
+        $self->key_press($locator, '\127', $element); # Delete
+    };
+
+    return 1;
 }
 
 1;
