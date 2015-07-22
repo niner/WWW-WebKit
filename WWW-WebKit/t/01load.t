@@ -39,6 +39,12 @@ $sel->open("$Bin/test/confirm.html");
 is(pop @{ $sel->confirmations }, 'test');
 is($sel->get_text('id=result'), 'yes');
 
+my $default_confirm = $sel->accept_confirm;
+$sel->accept_confirm(0);
+$sel->open("$Bin/test/confirm.html");
+is($sel->get_text('id=result'), 'no');
+$sel->accept_confirm($default_confirm);
+
 $sel->answer_on_next_prompt('test');
 # $sel->open("$Bin/test/prompt.html");
 # is($sel->get_text('id=result'), 'yes');

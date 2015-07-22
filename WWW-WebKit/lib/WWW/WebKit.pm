@@ -188,6 +188,12 @@ has pending_requests => (
     default => sub { {} },
 );
 
+has accept_confirm => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 1,
+);
+
 =head2 METHODS
 
 =head3 init
@@ -217,7 +223,7 @@ sub init_webkit {
     });
     $self->view->signal_connect('script-confirm' => sub {
         push @{ $self->confirmations }, $_[2];
-        WWW::WebKit::XSHelper::set_int_return_value($_[3], TRUE);
+        WWW::WebKit::XSHelper::set_int_return_value($_[3], $self->accept_confirm ? TRUE : FALSE);
         return TRUE;
     });
     $self->view->signal_connect('script-prompt' => sub {
