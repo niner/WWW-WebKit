@@ -305,7 +305,7 @@ sub setup_xvfb {
     }
 
     # restore STDERR
-    open STDERR, '>&', $stderr;
+    open STDERR, '>&', $stderr or die "Can't open STDERR: $!";;
 
     pipe my $read, my $write;
     my $writefd = fileno $write;
@@ -316,11 +316,11 @@ sub setup_xvfb {
     $flags &= ~FD_CLOEXEC;
     fcntl $write, F_SETFD, $flags;
 
-    open STDERR, '>/dev/null';
+    open STDERR, '>', '/dev/null' or die "Cant' open STDERR: $!";
 
     system ("Xvfb -nolisten tcp -terminate -screen 0 1600x1200x24 -displayfd $writefd &");
 
-    open STDERR, '>&', $stderr;
+    open STDERR, '>&', $stderr or die "Can't open STDERR: $!";
 
     # Xvfb prints the display number newline terminated to our pipe
     my $display = <$read>;
