@@ -125,6 +125,18 @@ has prompt_answers => (
     default => sub { [] },
 );
 
+has confirm_answers => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] },
+);
+
+has accept_confirm => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 1,
+);
+
 has display => (
     is        => 'ro',
     isa       => 'X11::Xlib',
@@ -188,12 +200,6 @@ has pending_requests => (
     default => sub { {} },
 );
 
-has accept_confirm => (
-    is      => 'rw',
-    isa     => 'Bool',
-    default => 1,
-);
-
 =head2 METHODS
 
 =head3 init
@@ -223,7 +229,10 @@ sub init_webkit {
     });
     $self->view->signal_connect('script-confirm' => sub {
         push @{ $self->confirmations }, $_[2];
-        WWW::WebKit::XSHelper::set_int_return_value($_[3], $self->accept_confirm ? TRUE : FALSE);
+        WWW::WebKit::XSHelper::set_int_return_value($_[3],
+            @{ $self->confirm_answers }
+                ? pop @{ $self->confirm_answers }
+                : ($self->accept_confirm ? TRUE : FALSE));
         return TRUE;
     });
     $self->view->signal_connect('script-prompt' => sub {
@@ -948,6 +957,16 @@ sub print_requested {
     my ($self) = @_;
 
     return pop @{ $self->print_requests } ? 1 : 0;
+}
+
+=head3 answer_on_next_confirm
+
+=cut
+
+sub answer_on_next_confirm {
+    my ($self, $answer) = @_;
+
+    push @{ $self->confirm_answers }, $answer;
 }
 
 =head3 answer_on_next_prompt($answer)
