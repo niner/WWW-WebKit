@@ -125,6 +125,18 @@ has prompt_answers => (
     default => sub { [] },
 );
 
+has confirm_answers => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] },
+);
+
+has accept_confirm => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 1,
+);
+
 has display => (
     is        => 'ro',
     isa       => 'X11::Xlib',
@@ -217,7 +229,10 @@ sub init_webkit {
     });
     $self->view->signal_connect('script-confirm' => sub {
         push @{ $self->confirmations }, $_[2];
-        WWW::WebKit::XSHelper::set_int_return_value($_[3], TRUE);
+        WWW::WebKit::XSHelper::set_int_return_value($_[3],
+            @{ $self->confirm_answers }
+                ? pop @{ $self->confirm_answers }
+                : ($self->accept_confirm ? TRUE : FALSE));
         return TRUE;
     });
     $self->view->signal_connect('script-prompt' => sub {
@@ -290,7 +305,7 @@ sub setup_xvfb {
     }
 
     # restore STDERR
-    open STDERR, '>&', $stderr;
+    open STDERR, '>&', $stderr or die "Can't open STDERR: $!";;
 
     pipe my $read, my $write;
     my $writefd = fileno $write;
@@ -301,11 +316,11 @@ sub setup_xvfb {
     $flags &= ~FD_CLOEXEC;
     fcntl $write, F_SETFD, $flags;
 
-    open STDERR, '>/dev/null';
+    open STDERR, '>', '/dev/null' or die "Cant' open STDERR: $!";
 
     system ("Xvfb -nolisten tcp -terminate -screen 0 1600x1200x24 -displayfd $writefd &");
 
-    open STDERR, '>&', $stderr;
+    open STDERR, '>&', $stderr or die "Can't open STDERR: $!";
 
     # Xvfb prints the display number newline terminated to our pipe
     my $display = <$read>;
@@ -942,6 +957,16 @@ sub print_requested {
     my ($self) = @_;
 
     return pop @{ $self->print_requests } ? 1 : 0;
+}
+
+=head3 answer_on_next_confirm
+
+=cut
+
+sub answer_on_next_confirm {
+    my ($self, $answer) = @_;
+
+    push @{ $self->confirm_answers }, $answer;
 }
 
 =head3 answer_on_next_prompt($answer)
