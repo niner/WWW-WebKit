@@ -657,8 +657,8 @@ my %keycodes = (
     '\8'   => 22,  # Backspace
     '\044' => 59,  # Comma
     ','    => 59,  # Comma
-    '\045' => 20,  # Hyphen
-    '-'    => 20,  # Hyphen
+    '\045' => 61,  # Hyphen
+    '-'    => 61,  # Hyphen
     '\046' => 60,  # Dot
     '.'    => 60,  # Dot
 );
