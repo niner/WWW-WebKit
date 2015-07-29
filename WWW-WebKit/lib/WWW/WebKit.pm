@@ -949,6 +949,16 @@ sub get_confirmation {
     return pop @{ $self->confirmations };
 }
 
+=head3 get_alert()
+
+=cut
+
+sub get_alert {
+    my ($self) = @_;
+
+    return pop @{ $self->alerts };
+}
+
 =head3 print_requested()
 
 =cut
