@@ -1,3 +1,9 @@
+0.08 2016-05-31 12:35:00 CEST
+    * Fix JavaScript prompt() handling
+    * Add method to check next alert message
+    * Add attribute to accept/decline confirmations
+    * Add method to answer each confirmation individually
+
 0.07 2014-12-07 12:00:00 CET
     * New method: disable_plugins
     * Allow multi-line JS in eval_js
