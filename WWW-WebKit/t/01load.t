@@ -56,9 +56,9 @@ $sel->answer_on_next_confirm(0);
 $sel->open("$Bin/test/confirm.html");
 is($sel->get_text('id=result'), 'no');
 
-$sel->answer_on_next_prompt('test');
-# $sel->open("$Bin/test/prompt.html");
-# is($sel->get_text('id=result'), 'yes');
+$sel->answer_on_next_prompt('test answer');
+$sel->open("$Bin/test/prompt.html");
+is($sel->get_text('id=result'), 'test answer');
 
 $sel->open("$Bin/test/print.html");
 ok($sel->print_requested, "print requested");

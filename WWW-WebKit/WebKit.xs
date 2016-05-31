@@ -20,7 +20,10 @@ set_int_return_value(return_value, value)
 void
 set_string_return_value(return_value, value)
 	gpointer return_value
-	char*	 value
+	SV*	 value
     CODE:
-        /* probably shouldn't be a C string, but a WebDOMString or alike */
-        *(char*)return_value = value;
+	STRLEN len;
+	char * pv = SvPVutf8(value, len);
+	gchar *copy = g_malloc0((len + 1) * sizeof(char));
+	Copy(pv, copy, len, char);
+        *((gchar**)return_value) = copy;

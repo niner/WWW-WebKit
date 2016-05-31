@@ -236,10 +236,7 @@ sub init_webkit {
         return TRUE;
     });
     $self->view->signal_connect('script-prompt' => sub {
-        # warn 'prompt: ' . $_[2];
-        # warn "answering with: " . $self->prompt_answers->[-1];
-        #FIXME causes segfault:
-        # WWW::WebKit::XSHelper::set_string_return_value($_[4], pop @{ $self->prompt_answers });
+        WWW::WebKit::XSHelper::set_string_return_value($_[4], pop @{ $self->prompt_answers });
         return TRUE;
     });
     $self->view->signal_connect('console-message' => sub {
