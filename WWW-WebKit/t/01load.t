@@ -10,7 +10,7 @@ BEGIN {
     use_ok 'WWW::WebKit';
 }
 
-my $sel = WWW::WebKit->new(xvfb => 0);
+my $sel = WWW::WebKit->new(xvfb => 1);
 eval { $sel->init; };
 if ($@ and $@ =~ /\ACould not start Xvfb/) {
     $sel = WWW::WebKit->new();
