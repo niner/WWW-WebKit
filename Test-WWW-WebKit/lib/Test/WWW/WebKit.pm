@@ -116,8 +116,9 @@ sub is_element_present_ok {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     my $result = $self->is_element_present($locator);
-    ok($result, "is_element_present_ok($locator)");
-    warn "# $@\n" unless $result;
+    my $retval = ok($result, "is_element_present_ok($locator)")
+        or diag "# $@\n";
+    return $retval;
 }
 
 sub type_ok {
