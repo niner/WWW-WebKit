@@ -1,3 +1,6 @@
+0.09 2016-10-27 09:50:00 CEST
+    * Re-enable use of xvfb in tests
+
 0.08 2016-05-31 12:35:00 CEST
     * Fix JavaScript prompt() handling
     * Add method to check next alert message
