@@ -36,7 +36,7 @@ use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use Test::More;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub open_ok {
     my ($self, $url) = @_;

@@ -1,3 +1,7 @@
+0.04 2016-10-27 09:55:00 CEST
+    * Have is_element_present_ok return false on failure
+    * Replace common::sense in tests to reduce dependencies
+
 0.03 2013-10-01 22:45:00 CEST
     * New method: wait_for_condition_ok
     * New method: native_drag_and_drop_to_position_ok
