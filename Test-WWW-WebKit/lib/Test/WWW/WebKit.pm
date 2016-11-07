@@ -111,6 +111,13 @@ sub wait_for_condition_ok {
     ok($self->wait_for_condition($condition, $timeout), $description);
 }
 
+sub wait_for_pending_requests_ok {
+    my ($self, $timeout, $description) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    ok($self->wait_for_pending_requests($timeout), $description);
+}
+
 sub is_element_present_ok {
     my ($self, $locator) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
