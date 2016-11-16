@@ -1,3 +1,6 @@
+0.05 2016-11-16 09:00:00 CET
+    * New method: wait_for_pending_requests_ok
+
 0.04 2016-10-27 09:55:00 CEST
     * Have is_element_present_ok return false on failure
     * Replace common::sense in tests to reduce dependencies
