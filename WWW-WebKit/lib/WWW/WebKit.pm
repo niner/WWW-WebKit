@@ -40,7 +40,7 @@ use XSLoader;
 use English '-no_match_vars';
 use POSIX qw<F_SETFD F_GETFD FD_CLOEXEC>;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 use constant DOM_TYPE_ELEMENT => 1;
 use constant ORDERED_NODE_SNAPSHOT_TYPE => 7;
