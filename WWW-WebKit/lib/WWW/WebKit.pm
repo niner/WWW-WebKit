@@ -78,6 +78,18 @@ has scrolled_view => (
     }
 );
 
+has window_width => (
+    is      => 'ro',
+    isa     => 'Int',
+    default => 1600,
+);
+
+has window_height => (
+    is      => 'ro',
+    isa     => 'Int',
+    default => 1200,
+);
+
 has window => (
     is        => 'ro',
     isa       => 'Gtk3::Window',
@@ -91,7 +103,7 @@ has window => (
 
         my $win = Gtk3::Window->new;
         $win->set_title($self->window_title);
-        $win->set_default_size(1600, 1200);
+        $win->set_default_size($self->window_width, $self->window_height);
         $win->add($sw);
 
         return $win;
@@ -315,7 +327,8 @@ sub setup_xvfb {
 
     open STDERR, '>', '/dev/null' or die "Cant' open STDERR: $!";
 
-    system ("Xvfb -nolisten tcp -terminate -screen 0 1600x1200x24 -displayfd $writefd &");
+    my $screen_dimensions = join 'x', $self->window_width, $self->window_height, 24;
+    system ("Xvfb -nolisten tcp -terminate -screen 0 $screen_dimensions -displayfd $writefd &");
 
     open STDERR, '>&', $stderr or die "Can't open STDERR: $!";
 
