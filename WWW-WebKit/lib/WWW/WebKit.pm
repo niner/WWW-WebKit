@@ -1078,21 +1078,23 @@ sub wait_for_condition {
     return $result;
 }
 
-=head3 native_drag_and_drop_to_position($source, $target_x, $target_y, $options)
+=head3 native_drag_and_drop_to_position($source_locator, $target_x, $target_y, $options)
 
-Drag and drop $source to position ($target_x and $target_y).
+Drag source element and drop it to position $target_x, $target_y.
 
 =cut
 
 sub native_drag_and_drop_to_position {
-    my ($self, $source, $target_x, $target_y, $options) = @_;
+    my ($self, $source_locator, $target_x, $target_y, $options) = @_;
+    $self->check_window_bounds($target_x, $target_y, "target");
 
     my $steps = $options->{steps} // 5;
     my $step_delay =  $options->{step_delay} // 150; # ms
     $self->event_send_delay($options->{event_send_delay}) if $options->{event_send_delay};
 
-    $source = $self->resolve_locator($source);
+    my $source = $self->resolve_locator($source_locator);
     my ($source_x, $source_y) = $self->get_center_screen_position($source);
+    $self->check_window_bounds($source_x, $source_y, "source '$source_locator'");
 
     my ($delta_x, $delta_y) = ($target_x - $source_x, $target_y - $source_y);
     my ($step_x, $step_y) = (int($delta_x / $steps), int($delta_y / $steps));
@@ -1118,9 +1120,9 @@ sub native_drag_and_drop_to_position {
     $self->process_page_load;
 }
 
-=head3 native_drag_and_drop_to_object($source, $target, $options)
+=head3 native_drag_and_drop_to_object($source_locator, $target_locator, $options)
 
-Drag and drop $source to $target.
+Drag source element and drop it into target element.
 
 =cut
 
@@ -1137,6 +1139,7 @@ sub native_drag_and_drop_to_object {
     my $source = $self->resolve_locator($source_locator)
         or croak "did not find element $source_locator";
     my ($x, $y) = $self->get_center_screen_position($source);
+    $self->check_window_bounds($x, $y, "source '$source_locator'");
 
     $self->pause($step_delay);
     $self->move_mouse_abs($x, $y);
@@ -1144,9 +1147,10 @@ sub native_drag_and_drop_to_object {
     $self->press_mouse_button(1);
     $self->pause($step_delay);
 
-    foreach (0 .. $steps - 1) {
-        my ($target_x, $target_y) = $self->get_center_screen_position($target);
+    my ($target_x, $target_y) = $self->get_center_screen_position($target);
+    $self->check_window_bounds($target_x, $target_y, "target '$target_locator'");
 
+    foreach (0 .. $steps - 1) {
         my $delta_x = $target_x - $x;
         my $delta_y = $target_y - $y;
         my $step_x = int($delta_x / ($steps - $_));
@@ -1168,6 +1172,19 @@ sub native_drag_and_drop_to_object {
     $self->pause($step_delay);
 
     $self->process_page_load;
+}
+
+sub check_window_bounds {
+    my ($self, $x, $y, $obj_description) = @_;
+
+    my ($max_x, $max_y) = ($self->window_width, $self->window_height);
+    if ($x > $max_x or $y > $max_y) {
+        croak
+            "$obj_description out of bounds (position: $x, $y - window bounds: $max_x x $max_y). "
+            . "Raise window_width/window_height!"
+    }
+
+    return 1;
 }
 
 sub move_mouse_abs {
