@@ -647,6 +647,8 @@ sub type {
 my %keycodes = (
     '\013' => 36,  # Carriage Return
     "\n"   => 36,  # Carriage Return
+    '\9'   => 23,  # Tabulator
+    "\t"   => 23,  # Tabulator
     '\027' => 9,   # Escape
     ' '    => 65,  # Space
     '\032' => 65,  # Space
