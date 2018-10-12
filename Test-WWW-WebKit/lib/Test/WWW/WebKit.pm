@@ -179,14 +179,16 @@ sub type_ok {
     my ($self, $locator, $text) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok(eval { $self->type($locator, $text) }, "type_ok($locator, $text)");
+    ok(eval { $self->type($locator, $text) }, "type_ok($locator, $text)")
+        or $self->shout($@);
 }
 
 sub type_keys_ok {
     my ($self, $locator, $text) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok(eval { $self->type_keys($locator, $text) }, "type_keys_ok($locator, $text)");
+    ok(eval { $self->type_keys($locator, $text) }, "type_keys_ok($locator, $text)")
+        or $self->shout($@);
 }
 
 sub control_key_down_ok {
@@ -235,7 +237,8 @@ sub fire_event_ok {
     my ($self, $locator, $event_type) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok($self->fire_event($locator, $event_type), "fire_event_ok($locator, $event_type)");
+    ok($self->fire_event($locator, $event_type), "fire_event_ok($locator, $event_type)")
+        or $self->shout($@);
 }
 
 sub text_is {
