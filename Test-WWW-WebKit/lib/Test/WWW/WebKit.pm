@@ -36,7 +36,27 @@ use Glib qw(TRUE FALSE);
 use Time::HiRes qw(time usleep);
 use Test::More;
 
+has 'debug' => (
+    is      => 'ro',
+    isa     => 'Bool',
+    default => 0,
+);
+
 our $VERSION = '0.05';
+
+sub shout {
+    my ($self, $error) = @_;
+
+    diag($error);
+
+    if ($self->debug) {
+
+        diag($self->resolve_locator('css=body')->get_inner_html);
+        diag(Data::Dumper::Dumper($self->pending_requests));
+    }
+
+    return $self;
+}
 
 sub open_ok {
     my ($self, $url) = @_;
@@ -74,7 +94,12 @@ sub click_ok {
     my ($self, $locator) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok($self->click($locator), "click_ok($locator)");
+    my $result = $self->click($locator);
+
+    my $retval = ok($result, "click_ok($locator)")
+        or $self->shout($@);
+
+    return $retval;
 }
 
 sub wait_for_page_to_load_ok {
@@ -91,7 +116,12 @@ sub wait_for_element_present_ok {
 
     $timeout ||= $self->default_timeout;
 
-    ok($self->wait_for_element_present($locator, $timeout), "wait_for_element_present_ok($locator, $timeout, $description)");
+    my $result = $self->wait_for_element_present($locator, $timeout);
+
+    my $retval = ok($result, "wait_for_element_present_ok($locator, $timeout, $description)")
+        or $self->shout($@);
+
+    return $retval;
 }
 
 sub wait_for_element_to_disappear_ok {
@@ -101,21 +131,36 @@ sub wait_for_element_to_disappear_ok {
 
     $timeout ||= $self->default_timeout;
 
-    ok($self->wait_for_element_to_disappear($locator, $timeout), "wait_for_element_to_disappear_ok($locator, $timeout, $description)");
+    my $result = $self->wait_for_element_to_disappear($locator, $timeout);
+
+    my $retval = ok($result, "wait_for_element_to_disappear_ok($locator, $timeout, $description)")
+        or $self->shout($@);
+
+    return $retval;
 }
 
 sub wait_for_condition_ok {
     my ($self, $condition, $timeout, $description) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok($self->wait_for_condition($condition, $timeout), $description);
+    my $result = $self->wait_for_condition($condition, $timeout);
+
+    my $retval = ok($result, $description)
+        or $self->shout($@);
+
+    return $retval;
 }
 
 sub wait_for_pending_requests_ok {
     my ($self, $timeout, $description) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok($self->wait_for_pending_requests($timeout), $description);
+    my $result = $self->wait_for_pending_requests($timeout);
+
+    my $retval = ok($result, $description)
+        or $self->shout($@);
+
+    return $retval;
 }
 
 sub is_element_present_ok {
@@ -123,8 +168,10 @@ sub is_element_present_ok {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     my $result = $self->is_element_present($locator);
+
     my $retval = ok($result, "is_element_present_ok($locator)")
-        or diag "# $@\n";
+        or $self->shout($@);
+
     return $retval;
 }
 
@@ -162,7 +209,12 @@ sub is_ordered_ok {
     my ($self, $first, $second) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    ok($self->is_ordered($first, $second), "is_ordered_ok($first, $second)");
+    my $result = $self->is_ordered($first, $second);
+
+    my $retval = ok($result, "is_ordered_ok($first, $second)")
+        or $self->shout($@);
+
+    return $retval;
 }
 
 sub mouse_over_ok {
@@ -191,7 +243,12 @@ sub text_is {
     $description //= '';
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    is($self->get_text($locator), $text, "text_is($locator, $text, $description)");
+    my $result = $self->get_text($locator);
+
+    my $retval = is($result, $text, "text_is($locator, $text, $description)")
+        or $self->shout($@);
+
+    return $retval;
 }
 
 sub text_like {
