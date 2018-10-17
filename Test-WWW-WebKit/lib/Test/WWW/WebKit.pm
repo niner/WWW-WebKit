@@ -141,11 +141,12 @@ sub wait_for_element_to_disappear_ok {
 
 sub wait_for_condition_ok {
     my ($self, $condition, $timeout, $description) = @_;
+    $description //= '';
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     my $result = $self->wait_for_condition($condition, $timeout);
 
-    my $retval = ok($result, $description)
+    my $retval = ok($result, "wait_for_condition($description)")
         or $self->shout($@);
 
     return $retval;
@@ -153,11 +154,12 @@ sub wait_for_condition_ok {
 
 sub wait_for_pending_requests_ok {
     my ($self, $timeout, $description) = @_;
+    $description //= '';
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     my $result = $self->wait_for_pending_requests($timeout);
 
-    my $retval = ok($result, $description)
+    my $retval = ok($result, "wait_for_pending_requests($description)")
         or $self->shout($@);
 
     return $retval;
@@ -258,7 +260,7 @@ sub text_like {
     my ($self, $locator, $text) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    like($self->get_text($locator), $text);
+    like($self->get_text($locator), $text, "test_like($text)");
 }
 
 sub body_text_like {
