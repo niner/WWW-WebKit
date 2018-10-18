@@ -1069,6 +1069,8 @@ sub wait_for_condition {
 
     my $expiry = time + $timeout / 1000;
 
+    $self->process_events;
+
     my $result;
     until ($result = $condition->()) {
         $self->process_events;
@@ -1076,6 +1078,8 @@ sub wait_for_condition {
         return 0 if time > $expiry;
         usleep 10000;
     }
+
+    $self->process_events;
 
     return $result;
 }
